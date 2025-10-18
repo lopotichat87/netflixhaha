@@ -1,19 +1,28 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { authHelpers } from '@/lib/supabase';
 import { motion } from 'framer-motion';
-import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, CheckCircle } from 'lucide-react';
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+
+  useEffect(() => {
+    const message = searchParams.get('message');
+    if (message === 'confirm-email') {
+      setSuccessMessage('Inscription réussie ! Veuillez vérifier votre boîte mail pour confirmer votre adresse email avant de vous connecter.');
+    }
+  }, [searchParams]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,6 +61,16 @@ export default function LoginPage() {
         className="relative z-10 w-full max-w-md bg-black/75 p-12 rounded-lg"
       >
         <h1 className="text-3xl font-bold mb-8">Connexion</h1>
+
+        {successMessage && (
+          <div className="mb-4 p-4 bg-green-600/20 border border-green-600 rounded text-sm flex items-start gap-3">
+            <CheckCircle className="flex-shrink-0 mt-0.5" size={20} />
+            <div>
+              <p className="font-semibold mb-1">Inscription réussie !</p>
+              <p className="text-gray-300">{successMessage}</p>
+            </div>
+          </div>
+        )}
 
         {error && (
           <div className="mb-4 p-3 bg-red-600/20 border border-red-600 rounded text-sm">
@@ -114,5 +133,17 @@ export default function LoginPage() {
         </div>
       </motion.div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-white"></div>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   );
 }

@@ -63,18 +63,11 @@ export default function SignupPage() {
           })
           .eq('user_id', result.user.id);
         
-        // Rediriger directement sans attendre la confirmation d'email
-        router.push('/');
-        router.refresh();
+        // Rediriger vers la page de connexion avec un message de confirmation
+        router.push('/auth/login?message=confirm-email');
       }
     } catch (err: any) {
-      // Ignorer l'erreur de confirmation d'email
-      if (err.message?.includes('confirm') || err.message?.includes('email')) {
-        router.push('/');
-        router.refresh();
-      } else {
-        setError(err.message || 'Erreur lors de l\'inscription');
-      }
+      setError(err.message || 'Erreur lors de l\'inscription');
     } finally {
       setLoading(false);
     }
