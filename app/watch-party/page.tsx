@@ -1,12 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 import Navbar from '@/components/Navbar';
 import { Users, Link as LinkIcon, Copy, Check, Film, Tv, Search, ArrowRight } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+
 export default function WatchPartyCreatePage() {
   const router = useRouter();
+  const { user, loading } = useAuth();
+  
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/auth/login?redirect=/watch-party');
+    }
+  }, [user, loading, router]);
   const [mediaType, setMediaType] = useState<'movie' | 'tv'>('movie');
   const [mediaId, setMediaId] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -58,6 +68,18 @@ export default function WatchPartyCreatePage() {
       router.push(`/watch-party/${mediaType}/${mediaId}`);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#141414] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-white"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="relative bg-[#141414] min-h-screen">

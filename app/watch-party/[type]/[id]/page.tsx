@@ -9,6 +9,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 import { WatchPartySync } from '@/lib/party-sync';
 
+export const dynamic = 'force-dynamic';
+
 interface Message {
   id: string;
   user: string;
@@ -32,7 +34,7 @@ const USER_COLORS = ['#E50914', '#0080FF', '#00D4AA', '#FFB800', '#FF6B6B', '#9D
 export default function WatchPartyPage() {
   const params = useParams();
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const type = params.type as string;
   const id = params.id as string;
   const mediaId = parseInt(id);
@@ -55,6 +57,11 @@ export default function WatchPartyPage() {
   const syncRef = useRef<WatchPartySync | null>(null);
 
   useEffect(() => {
+    if (!authLoading && !user) {
+      router.push(`/auth/login?redirect=/watch-party/${type}/${id}`);
+      return;
+    }
+
     const names = ['Alex', 'Sam', 'Jordan', 'Taylor', 'Morgan', 'Casey', 'Riley', 'Avery'];
     setUserName(names[Math.floor(Math.random() * names.length)] + Math.floor(Math.random() * 100));
     setUserColor(USER_COLORS[Math.floor(Math.random() * USER_COLORS.length)]);
@@ -64,7 +71,9 @@ export default function WatchPartyPage() {
       return;
     }
 
-    loadMedia();
+    if (user) {
+      loadMedia();
+    }
     simulateMessages();
 
     // Initialiser la synchronisation Watch Party
@@ -154,12 +163,16 @@ export default function WatchPartyPage() {
     }, 3000);
   };
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-white"></div>
       </div>
     );
+  }
+
+  if (!user) {
+    return null;
   }
 
   if (!media) {

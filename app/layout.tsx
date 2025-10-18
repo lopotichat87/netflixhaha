@@ -9,6 +9,7 @@ import PinGuard from '@/components/PinGuard';
 import ProgressBar from '@/components/ProgressBar';
 import QueryProvider from '@/components/QueryProvider';
 import ActivityTracker from '@/components/ActivityTracker';
+import PopupBlocker from '@/components/PopupBlocker';
 import './globals.css';
 import 'nprogress/nprogress.css';
 import { GA_MEASUREMENT_ID } from "@/lib/analytics";
@@ -94,6 +95,7 @@ export default function RootLayout({
           <AuthProvider>
             <PinGuard>
               {/* <ActivityTracker /> */}
+              <PopupBlocker />
               <Suspense fallback={null}>
                 <ProgressBar />
               </Suspense>
