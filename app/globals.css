@@ -24,3 +24,50 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Bloquer les publicités et popups */
+iframe {
+  pointer-events: auto !important;
+}
+
+/* Masquer tous les types de publicités */
+iframe[src*="ads"],
+iframe[src*="advert"],
+iframe[src*="banner"],
+iframe[src*="popup"],
+iframe[src*="ad."],
+div[class*="ad-"],
+div[id*="ad-"],
+div[class*="advertisement"],
+div[class*="popup"],
+div[id*="popup"],
+a[href*="ads"],
+a[href*="advert"],
+[class*="sponsor"],
+[id*="sponsor"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  position: absolute !important;
+  left: -9999px !important;
+}
+
+/* Bloquer les overlays et modales publicitaires */
+div[style*="z-index: 999"],
+div[style*="z-index: 9999"],
+div[class*="overlay"],
+div[class*="modal"][class*="ad"] {
+  display: none !important;
+}
+
+/* Masquer les scrollbars */
+.cast-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.cast-scroll {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
