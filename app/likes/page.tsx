@@ -10,6 +10,8 @@ import { Heart, Sparkles, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
+export const dynamic = 'force-dynamic';
+
 export default function LikesPage() {
   const { user } = useAuth();
   const router = useRouter();

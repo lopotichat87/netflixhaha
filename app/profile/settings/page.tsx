@@ -9,6 +9,8 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { supabase, profileHelpers } from '@/lib/supabase';
 
+export const dynamic = 'force-dynamic';
+
 const AVATARS = [
   { id: 1, emoji: '🎬', color: 'bg-red-600' },
   { id: 2, emoji: '🍿', color: 'bg-blue-600' },

@@ -8,6 +8,8 @@ import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Toolti
 import { Clock, TrendingUp, Film, Tv } from 'lucide-react';
 import Link from 'next/link';
 
+export const dynamic = 'force-dynamic';
+
 const GENRE_MAP: { [key: number]: string } = {
   28: 'Action',
   12: 'Aventure',

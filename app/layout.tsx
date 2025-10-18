@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import "./nprogress.css";
 import Script from "next/script";
+import { Suspense } from "react";
 import { AuthProvider } from '@/contexts/AuthContext';
 import PinGuard from '@/components/PinGuard';
 import ProgressBar from '@/components/ProgressBar';
@@ -78,11 +79,13 @@ export default function RootLayout({
         )}
         
         {/* Cloudflare Browser Insights */}
-        <Script
-          src="https://static.cloudflareinsights.com/beacon.min.js"
-          data-cf-beacon='{"token": "YOUR_CLOUDFLARE_TOKEN"}'
-          strategy="afterInteractive"
-        />
+        {process.env.NEXT_PUBLIC_CLOUDFLARE_TOKEN && (
+          <Script
+            src="https://static.cloudflareinsights.com/beacon.min.js"
+            data-cf-beacon={`{"token": "${process.env.NEXT_PUBLIC_CLOUDFLARE_TOKEN}"}`}
+            strategy="afterInteractive"
+          />
+        )}
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
@@ -91,7 +94,9 @@ export default function RootLayout({
           <AuthProvider>
             <PinGuard>
               {/* <ActivityTracker /> */}
-              <ProgressBar />
+              <Suspense fallback={null}>
+                <ProgressBar />
+              </Suspense>
               {children}
             </PinGuard>
           </AuthProvider>

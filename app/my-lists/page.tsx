@@ -8,6 +8,8 @@ import MovieCard from '@/components/MovieCard';
 import { Plus, Trash2, Edit2, Folder } from 'lucide-react';
 import Link from 'next/link';
 
+export const dynamic = 'force-dynamic';
+
 export default function MyListsPage() {
   const { user } = useAuth();
   const [lists, setLists] = useState<UserList[]>([]);

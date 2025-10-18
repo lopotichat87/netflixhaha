@@ -10,6 +10,8 @@ import Link from 'next/link';
 import { favoritesHelpers, Favorite } from '@/lib/supabase';
 import MovieCard from '@/components/MovieCard';
 
+export const dynamic = 'force-dynamic';
+
 export default function FavoritesPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();

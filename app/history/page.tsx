@@ -10,6 +10,8 @@ import { ArrowLeft, Trash2, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { historyHelpers } from '@/lib/supabase';
 
+export const dynamic = 'force-dynamic';
+
 export default function HistoryPage() {
   const { user } = useAuth();
   const router = useRouter();
