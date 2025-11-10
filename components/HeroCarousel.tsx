@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Media, getImageUrl, getTitle, getReleaseDate, getMediaType } from '@/lib/api';
-import { Play, Info, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Star, Plus, Info, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -119,16 +119,16 @@ export default function HeroCarousel({ media, autoPlayInterval = 8000 }: HeroCar
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.6 }}
           >
-            <Link href={`/watch/${getMediaType(currentMedia)}/${currentMedia.id}`}>
-              <Button variant="default" size="lg" className="gap-2">
-                <Play size={24} fill="currentColor" />
-                <span>Lecture</span>
+            <Link href={`/${getMediaType(currentMedia)}/${currentMedia.id}`}>
+              <Button variant="default" size="lg" className="gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 border-0">
+                <Star size={20} />
+                <span>Noter</span>
               </Button>
             </Link>
 
             <Link href={`/${getMediaType(currentMedia)}/${currentMedia.id}`}>
-              <Button variant="secondary" size="lg" className="gap-2">
-                <Info size={24} />
+              <Button variant="secondary" size="lg" className="gap-2 bg-white/10 hover:bg-white/20">
+                <Info size={20} />
                 <span>Plus d'infos</span>
               </Button>
             </Link>

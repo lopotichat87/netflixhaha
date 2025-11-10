@@ -4,16 +4,20 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import NProgress from 'nprogress';
-import { Search, Bell } from 'lucide-react';
+import { Search, Bell, Film, Users, LogIn, UserPlus } from 'lucide-react';
 import UserMenu from './UserMenu';
+import UserSearch from './UserSearch';
 import MobileMenu from './MobileMenu';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function Navbar() {
+  const { user, loading } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showResults, setShowResults] = useState(false);
+  const [searchTab, setSearchTab] = useState<'films' | 'users'>('films');
   const [isSearching, setIsSearching] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const router = useRouter();
@@ -77,84 +81,52 @@ export default function Navbar() {
       <div className="flex items-center justify-between px-4 md:px-16 py-4">
         {/* Logo and Navigation */}
         <div className="flex items-center gap-8">
-          <Link href="/" className="text-red-600 text-2xl md:text-3xl font-bold">
-            NETFLIX
+          <Link href="/" className="flex items-center gap-2 group">
+            <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500 bg-clip-text text-transparent transition-all duration-300 group-hover:scale-105">
+              ReelVibe
+            </div>
+            <div className="hidden md:block w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
           </Link>
           
           <ul className="hidden md:flex items-center gap-6 text-sm">
             <li>
-              <Link href="/" className="hover:text-gray-300 transition">
+              <Link href="/home" className="hover:text-purple-400 transition font-medium">
                 Accueil
               </Link>
             </li>
-
-            {/* Dropdown Contenu */}
-            <li 
-              className="relative group"
-              onMouseEnter={() => setOpenDropdown('contenu')}
-              onMouseLeave={() => setOpenDropdown(null)}
-            >
-              <button className="hover:text-gray-300 transition flex items-center gap-1">
-                Contenu
-                <motion.svg 
-                  className="w-4 h-4" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24"
-                  animate={{ rotate: openDropdown === 'contenu' ? 180 : 0 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </motion.svg>
-              </button>
-              <AnimatePresence>
-                {openDropdown === 'contenu' && (
-                  <motion.div 
-                    initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                    transition={{ duration: 0.2, ease: "easeOut" }}
-                    className="absolute top-full left-0 mt-2 w-48 bg-black/95 backdrop-blur-sm border border-gray-700 rounded-lg shadow-xl py-2 overflow-hidden"
-                  >
-                    <motion.div
-                      initial="closed"
-                      animate="open"
-                      variants={{
-                        open: {
-                          transition: { staggerChildren: 0.05 }
-                        }
-                      }}
-                    >
-                      {[
-                        { href: '/series', label: 'Séries' },
-                        { href: '/films', label: 'Films' },
-                        { href: '/sagas', label: 'Sagas' },
-                        { href: '/nouveautes', label: 'Nouveautés' }
-                      ].map((item) => (
-                        <motion.div
-                          key={item.href}
-                          variants={{
-                            closed: { opacity: 0, x: -20 },
-                            open: { opacity: 1, x: 0 }
-                          }}
-                        >
-                          <Link href={item.href} className="block px-4 py-2 hover:bg-gray-800 transition">
-                            {item.label}
-                          </Link>
-                        </motion.div>
-                      ))}
-                    </motion.div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+            <li>
+              <Link href="/movies" className="hover:text-purple-400 transition font-medium">
+                Films
+              </Link>
+            </li>
+            <li>
+              <Link href="/browse/series" className="hover:text-purple-400 transition font-medium">
+                Séries
+              </Link>
+            </li>
+            <li>
+              <Link href="/sagas" className="hover:text-purple-400 transition font-medium">
+                Collections
+              </Link>
+            </li>
+            <li>
+              <Link href="/nouveautes" className="hover:text-purple-400 transition font-medium">
+                Nouveautés
+              </Link>
+            </li>
+            <li>
+              <Link href="/trending" className="hover:text-purple-400 transition font-medium">
+                Tendances
+              </Link>
             </li>
 
-            {/* Dropdown Ma Collection */}
-            <li 
-              className="relative group"
-              onMouseEnter={() => setOpenDropdown('collection')}
-              onMouseLeave={() => setOpenDropdown(null)}
-            >
+            {/* Dropdown Ma Collection - Seulement si connecté */}
+            {user && (
+              <li 
+                className="relative group"
+                onMouseEnter={() => setOpenDropdown('collection')}
+                onMouseLeave={() => setOpenDropdown(null)}
+              >
               <button className="hover:text-gray-300 transition flex items-center gap-1">
                 Ma Collection
                 <motion.svg 
@@ -189,8 +161,9 @@ export default function Navbar() {
                       {[
                         { href: '/likes', label: 'Mes Likes' },
                         { href: '/my-lists', label: 'Mes Listes' },
-                        { href: '/history', label: 'Historique' },
-                        { href: '/stats', label: 'Statistiques' }
+                        { href: '/reviews', label: 'Mes Critiques' },
+                        { href: '/stats', label: 'Statistiques' },
+                        { href: '/watched', label: 'Films Vus' }
                       ].map((item) => (
                         <motion.div
                           key={item.href}
@@ -199,7 +172,68 @@ export default function Navbar() {
                             open: { opacity: 1, x: 0 }
                           }}
                         >
-                          <Link href={item.href} className="block px-4 py-2 hover:bg-gray-800 transition">
+                          <Link href={item.href} className="block px-4 py-2 hover:bg-purple-500/10 hover:text-purple-400 transition">
+                            {item.label}
+                          </Link>
+                        </motion.div>
+                      ))}
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              </li>
+            )}
+
+            {/* Dropdown Communauté */}
+            <li 
+              className="relative group"
+              onMouseEnter={() => setOpenDropdown('communaute')}
+              onMouseLeave={() => setOpenDropdown(null)}
+            >
+              <button className="hover:text-purple-400 transition flex items-center gap-1 font-medium">
+                Communauté
+                <motion.svg 
+                  className="w-4 h-4" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                  animate={{ rotate: openDropdown === 'communaute' ? 180 : 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </motion.svg>
+              </button>
+              <AnimatePresence>
+                {openDropdown === 'communaute' && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                    transition={{ duration: 0.2, ease: "easeOut" }}
+                    className="absolute top-full left-0 mt-2 w-56 bg-black/95 backdrop-blur-sm border border-gray-700 rounded-lg shadow-xl py-2 overflow-hidden"
+                  >
+                    <motion.div
+                      initial="closed"
+                      animate="open"
+                      variants={{
+                        open: {
+                          transition: { staggerChildren: 0.05 }
+                        }
+                      }}
+                    >
+                      {[
+                        { href: '/friends', label: 'Mes Amis', icon: 'Users' },
+                        { href: '/calendar', label: 'Calendrier', icon: 'Calendar' },
+                        { href: '/activity', label: 'Activités', icon: 'MessageSquare' }
+                      ].map((item) => (
+                        <motion.div
+                          key={item.href}
+                          variants={{
+                            closed: { opacity: 0, x: -20 },
+                            open: { opacity: 1, x: 0 }
+                          }}
+                        >
+                          <Link href={item.href} className="block px-4 py-2 hover:bg-purple-500/10 hover:text-purple-400 transition">
                             {item.label}
                           </Link>
                         </motion.div>
@@ -209,73 +243,45 @@ export default function Navbar() {
                 )}
               </AnimatePresence>
             </li>
-
-            <li>
-              <Link href="/watch-party" className="hover:text-gray-300 transition flex items-center gap-1">
-                <span className="text-purple-400">●</span>
-                Watch Party
-              </Link>
-            </li>
           </ul>
         </div>
 
         {/* Right side icons */}
-        <div className="flex items-center gap-2 md:gap-6">
-          {/* Search - Hidden on mobile */}
-          <form onSubmit={handleSearch} className="relative hidden md:block">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                handleSearchInput(e.target.value);
-              }}
-              onFocus={() => setShowResults(true)}
-              placeholder="Rechercher..."
-              className="w-0 md:w-64 px-4 py-2 bg-gray-900 border border-gray-700 rounded-full focus:outline-none focus:border-white transition-all duration-300 focus:w-64"
-            />
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+        <div className="flex items-center gap-2 md:gap-4">
+          {/* Search Button */}
+          <Link
+            href="/search"
+            className="hidden md:flex items-center gap-2 px-5 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg hover:bg-white/15 hover:border-white/30 transition-all duration-300 group"
+          >
+            <Search size={18} className="text-gray-300 group-hover:text-white transition" />
+            <span className="text-sm font-medium text-gray-300 group-hover:text-white transition">Rechercher</span>
+          </Link>
 
-            {/* Search Results Dropdown */}
-            {showResults && searchResults.length > 0 && (
-              <div className="absolute top-full mt-2 w-full md:w-96 bg-black/95 border border-gray-700 rounded-lg shadow-xl max-h-96 overflow-y-auto z-50">
-                {searchResults.map((result) => (
-                  <Link
-                    key={`${result.media_type}-${result.id}`}
-                    href={`/${result.media_type}/${result.id}`}
-                    onClick={() => {
-                      setShowResults(false);
-                      setSearchQuery('');
-                    }}
-                    className="flex items-center gap-3 p-3 hover:bg-gray-800 transition"
-                  >
-                    {result.poster_path ? (
-                      <img
-                        src={`https://image.tmdb.org/t/p/w92${result.poster_path}`}
-                        alt={result.title || result.name}
-                        className="w-12 h-16 object-cover rounded"
-                      />
-                    ) : (
-                      <div className="w-12 h-16 bg-gray-800 rounded flex items-center justify-center text-gray-600">
-                        ?
-                      </div>
-                    )}
-                    <div className="flex-1">
-                      <p className="font-semibold line-clamp-1">{result.title || result.name}</p>
-                      <p className="text-xs text-gray-400">
-                        {result.media_type === 'movie' ? 'Film' : 'Série'} • {result.release_date?.split('-')[0] || result.first_air_date?.split('-')[0]}
-                      </p>
-                    </div>
+          {/* Auth Buttons ou User Menu */}
+          {!loading && (
+            <>
+              {user ? (
+                <div className="hidden md:block">
+                  <UserMenu />
+                </div>
+              ) : (
+                <div className="hidden md:flex items-center gap-3">
+                  <Link href="/auth/login">
+                    <button className="flex items-center gap-2 px-4 py-2 border border-white/20 rounded-lg hover:bg-white/10 transition font-medium">
+                      <LogIn size={18} />
+                      Connexion
+                    </button>
                   </Link>
-                ))}
-              </div>
-            )}
-          </form>
-
-          {/* User Menu - Desktop only */}
-          <div className="hidden md:block">
-            <UserMenu />
-          </div>
+                  <Link href="/auth/signup">
+                    <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg hover:from-purple-700 hover:to-pink-700 transition font-semibold">
+                      <UserPlus size={18} />
+                      S'inscrire
+                    </button>
+                  </Link>
+                </div>
+              )}
+            </>
+          )}
 
           {/* Mobile Menu */}
           <MobileMenu />

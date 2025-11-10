@@ -60,12 +60,12 @@ export default function MovieRow({ title, media }: MovieRowProps) {
     <div className="space-y-2 px-4 md:px-16 mb-8">
       <h2 className="text-xl md:text-2xl font-semibold mb-4">{title}</h2>
       
-      <div className="relative group">
+      <div className="relative movie-row-container">
         {/* Left Arrow */}
         {showLeftArrow && (
           <button
             onClick={() => scroll('left')}
-            className="absolute left-0 top-0 bottom-0 z-40 w-12 bg-black/50 hover:bg-black/70 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+            className="absolute left-0 top-0 bottom-0 z-40 w-12 bg-black/50 hover:bg-black/70 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity"
             aria-label="Scroll left"
           >
             <ChevronLeft size={40} />
@@ -75,15 +75,31 @@ export default function MovieRow({ title, media }: MovieRowProps) {
         {/* Movies Container */}
         <div
           ref={rowRef}
-          className="flex gap-2 overflow-x-scroll scrollbar-hide scroll-smooth"
+          onScroll={() => {
+            if (rowRef.current) {
+              setShowLeftArrow(rowRef.current.scrollLeft > 0);
+              setShowRightArrow(
+                rowRef.current.scrollLeft < rowRef.current.scrollWidth - rowRef.current.clientWidth - 10
+              );
+            }
+          }}
+          className="flex gap-2 overflow-x-scroll scrollbar-hide scroll-smooth movie-row-scroll"
           style={{ 
             scrollbarWidth: 'none', 
             msOverflowStyle: 'none',
-            overflowY: 'visible'
+            overflowY: 'hidden'
+          }}
+          onMouseEnter={(e) => {
+            const buttons = e.currentTarget.parentElement?.querySelectorAll('button');
+            buttons?.forEach(btn => btn.style.opacity = '1');
+          }}
+          onMouseLeave={(e) => {
+            const buttons = e.currentTarget.parentElement?.querySelectorAll('button');
+            buttons?.forEach(btn => btn.style.opacity = '0');
           }}
         >
           {media.map((item) => (
-            <div key={item.id} className="w-[120px] md:w-[160px] flex-shrink-0">
+            <div key={item.id} className="w-[100px] md:w-[130px] flex-shrink-0">
               <MovieCard media={item} />
             </div>
           ))}
@@ -93,7 +109,7 @@ export default function MovieRow({ title, media }: MovieRowProps) {
         {showRightArrow && (
           <button
             onClick={() => scroll('right')}
-            className="absolute right-0 top-0 bottom-0 z-40 w-12 bg-black/50 hover:bg-black/70 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+            className="absolute right-0 top-0 bottom-0 z-40 w-12 bg-black/50 hover:bg-black/70 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity"
             aria-label="Scroll right"
           >
             <ChevronRight size={40} />

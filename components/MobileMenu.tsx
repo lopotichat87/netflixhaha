@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
-import { Menu, X, Home, Film, Tv, Sparkles, Heart, List, TrendingUp, Users, User, LogOut } from 'lucide-react';
+import { Menu, X, Home, Film, Tv, Sparkles, Heart, List, TrendingUp, User, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function MobileMenu() {
@@ -11,14 +11,13 @@ export default function MobileMenu() {
   const { user, profile } = useAuth();
 
   const menuItems = [
-    { icon: Home, label: 'Accueil', href: '/' },
-    { icon: Film, label: 'Films', href: '/films' },
-    { icon: Tv, label: 'Séries', href: '/series' },
+    { icon: Home, label: 'Accueil', href: '/home' },
+    { icon: Film, label: 'Films', href: '/movies' },
+    { icon: Tv, label: 'Séries', href: '/browse/series' },
+    { icon: List, label: 'Collections', href: '/sagas' },
+    { icon: TrendingUp, label: 'Tendances', href: '/trending' },
     { icon: Sparkles, label: 'Nouveautés', href: '/nouveautes' },
     { icon: Heart, label: 'Mes Likes', href: '/likes' },
-    { icon: List, label: 'Mes Listes', href: '/my-lists' },
-    { icon: TrendingUp, label: 'Statistiques', href: '/stats' },
-    { icon: Users, label: 'Watch Party', href: '/watch-party' },
   ];
 
   const handleSignOut = async () => {
@@ -62,7 +61,9 @@ export default function MobileMenu() {
               {/* Header */}
               <div className="p-6 border-b border-gray-800">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-2xl font-bold text-red-600">NETFLIX</h2>
+                  <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500 bg-clip-text text-transparent">
+                    ReelVibe
+                  </h2>
                   <button
                     onClick={() => setIsOpen(false)}
                     className="p-2 hover:bg-gray-800 rounded transition"

@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Navbar from '@/components/Navbar';
+import BrowseLayout from '@/components/BrowseLayout';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Film } from 'lucide-react';
+import { Film, Search } from 'lucide-react';
 
 interface Collection {
   id: number;
@@ -260,35 +260,28 @@ export default function SagasPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#141414]">
-      <Navbar />
-
-      <div className="pt-32 px-4 md:px-16 pb-20">
-        {/* Header */}
-        <div className="mb-12">
-          <div className="flex items-center gap-3 mb-4">
-            <Film size={40} className="text-red-600" />
-            <h1 className="text-4xl md:text-5xl font-bold">Sagas & Collections</h1>
-          </div>
-          <p className="text-gray-400 text-lg mb-6">
-            Découvrez les plus grandes sagas du cinéma
-          </p>
-
-          {/* Search Bar */}
-          <div className="max-w-xl">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Rechercher une saga..."
-              className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:border-white transition"
-            />
-          </div>
+    <BrowseLayout
+      title="Collections"
+      description="Découvrez les plus grandes sagas du cinéma"
+      icon={Film}
+      iconBg="from-red-500 to-orange-500"
+    >
+      <div>
+        {/* Search Bar */}
+        <div className="relative max-w-xl mb-8">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Rechercher une collection..."
+            className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:bg-white/[0.07] focus:border-white/20 transition placeholder:text-gray-600"
+          />
         </div>
 
         {/* Results Count */}
-        <p className="text-gray-400 mb-6">
-          {filteredCollections.length} saga{filteredCollections.length > 1 ? 's' : ''} trouvée{filteredCollections.length > 1 ? 's' : ''}
+        <p className="text-sm text-gray-500 mb-6">
+          {filteredCollections.length} collection{filteredCollections.length > 1 ? 's' : ''}
         </p>
 
         {/* Collections Grid */}
@@ -346,13 +339,13 @@ export default function SagasPage() {
         {collections.length === 0 && !loading && (
           <div className="text-center py-20">
             <Film size={64} className="mx-auto text-gray-600 mb-4" />
-            <h2 className="text-2xl font-semibold mb-2">Aucune saga trouvée</h2>
+            <h2 className="text-2xl font-semibold mb-2">Aucune collection trouvée</h2>
             <p className="text-gray-400">
               Les collections seront bientôt disponibles
             </p>
           </div>
         )}
       </div>
-    </div>
+    </BrowseLayout>
   );
 }

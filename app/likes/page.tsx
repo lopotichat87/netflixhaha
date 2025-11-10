@@ -3,10 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { favoritesHelpers, Favorite } from '@/lib/supabase';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Navbar from '@/components/Navbar';
 import ConfirmDialog from '@/components/ConfirmDialog';
-import { Heart, Sparkles, ArrowLeft } from 'lucide-react';
+import { Heart, Sparkles, ArrowLeft, Film, Star } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -15,6 +15,7 @@ export const dynamic = 'force-dynamic';
 export default function LikesPage() {
   const { user } = useAuth();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [confirmDialog, setConfirmDialog] = useState<{ isOpen: boolean; mediaId: number | null }>({
     isOpen: false,
     mediaId: null,
@@ -34,6 +35,25 @@ export default function LikesPage() {
   const removeFavorite = async (mediaId: number) => {
     if (!user) return;
     await favoritesHelpers.removeFromFavorites(user.id, mediaId);
+  };
+
+  const toggleFavorite = async (mediaId: number, mediaType: string, currentValue: boolean) => {
+    if (!user) return;
+    
+    try {
+      const { supabase } = await import('@/lib/supabase');
+      
+      await supabase
+        .from('favorites')
+        .update({ is_favorite: !currentValue })
+        .eq('media_id', mediaId)
+        .eq('media_type', mediaType);
+      
+      // Recharger les données
+      queryClient.invalidateQueries({ queryKey: ['favorites', user.id] });
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+    }
   };
 
 
@@ -96,68 +116,93 @@ export default function LikesPage() {
           {/* Favorites Grid */}
           {favorites.length === 0 ? (
             <div className="text-center py-20">
-              <Heart size={64} className="mx-auto text-gray-600 mb-4" />
-              <h2 className="text-2xl font-semibold mb-2">Aucun like pour le moment</h2>
+              <div className="w-20 h-20 bg-pink-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Heart size={40} className="text-pink-400 opacity-50" />
+              </div>
+              <h2 className="text-2xl font-bold mb-2">Aucun like pour le moment</h2>
               <p className="text-gray-400 mb-6">
-                Commencez à liker des films et séries pour les retrouver ici !
+                Commencez à liker des films et séries pour les retrouver ici
               </p>
               <Link
-                href="/"
-                className="inline-block px-6 py-3 bg-white text-black rounded font-semibold hover:bg-gray-200 transition"
+                href="/home"
+                className="inline-block px-6 py-3 bg-purple-600 rounded-lg font-semibold hover:bg-purple-700 transition"
               >
                 Découvrir du contenu
               </Link>
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {favorites.map((item) => (
-                <div key={item.id} className="relative group">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+              {favorites.map((item) => {
+                const isFavorite = (item as any).is_favorite === true;
+                
+                return (
+                <div key={item.id} className="relative">
                   <Link href={`/${item.media_type}/${item.media_id}`}>
-                    <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-gray-800 group-hover:scale-105 transition-transform">
-                      {item.poster_path ? (
-                        <img
-                          src={`https://image.tmdb.org/t/p/w342${item.poster_path}`}
-                          alt={item.title}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-600">
-                          Pas d'image
+                    <div className="cursor-pointer">
+                      <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-gray-800 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105">
+                        {item.poster_path ? (
+                          <img
+                            src={`https://image.tmdb.org/t/p/w500${item.poster_path}`}
+                            alt={item.title}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <Film size={48} className="text-gray-600" />
+                          </div>
+                        )}
+
+                        {/* Type Badge */}
+                        <div className="absolute top-2 left-2 bg-black/80 backdrop-blur-sm px-2 py-1 rounded text-xs font-semibold">
+                          {item.media_type === 'tv' ? 'Série' : 'Film'}
                         </div>
-                      )}
-                      
-                      {/* Overlay au hover */}
-                      <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center gap-2 z-10">
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setConfirmDialog({ isOpen: true, mediaId: item.media_id });
-                          }}
-                          className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-2"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                          Retirer
-                        </button>
-                        <Link
-                          href={`/watch/${item.media_type}/${item.media_id}`}
-                          className="bg-white/20 hover:bg-white/30 backdrop-blur-sm px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-2"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M8 5v14l11-7z"/>
-                          </svg>
-                          Regarder
-                        </Link>
+
+                        {/* Like Badge */}
+                        <div className="absolute bottom-2 left-2 bg-gradient-to-br from-pink-500 to-red-500 backdrop-blur-sm p-1.5 rounded-full shadow-lg">
+                          <Heart size={12} className="fill-white text-white" />
+                        </div>
+                        
+                        {/* Hover Overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
+                          <div className="flex gap-2">
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setConfirmDialog({ isOpen: true, mediaId: item.media_id });
+                              }}
+                              className="flex-1 bg-red-600 hover:bg-red-700 px-3 py-2 rounded-lg text-xs font-semibold transition"
+                            >
+                              Retirer
+                            </button>
+                          </div>
+                        </div>
                       </div>
+                      <h3 className="text-sm font-semibold line-clamp-2 mt-2 transition">
+                        {item.title}
+                      </h3>
                     </div>
                   </Link>
-                  <div className="mt-2">
-                    <h3 className="text-sm font-semibold line-clamp-1">{item.title}</h3>
-                  </div>
+                  
+                  {/* Bouton Favori */}
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      toggleFavorite(item.media_id, item.media_type, isFavorite);
+                    }}
+                    className={`absolute top-2 right-2 p-1.5 rounded-lg transition-all duration-200 z-10 ${
+                      isFavorite 
+                        ? 'bg-yellow-500 shadow-lg shadow-yellow-500/50' 
+                        : 'bg-gray-800/80 hover:bg-gray-700'
+                    }`}
+                    title={isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+                  >
+                    <Star size={14} className={isFavorite ? 'fill-white text-white' : 'text-gray-400'} />
+                  </button>
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

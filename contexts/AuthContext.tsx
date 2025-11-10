@@ -11,6 +11,7 @@ interface AuthContextType {
   pinVerified: boolean;
   setPinVerified: (verified: boolean) => void;
   signOut: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -20,6 +21,7 @@ const AuthContext = createContext<AuthContextType>({
   pinVerified: false,
   setPinVerified: () => {},
   signOut: async () => {},
+  refreshProfile: async () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -92,35 +94,73 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const loadProfile = async (userId: string) => {
+  const loadProfile = async (userId: string, forceRefresh = false) => {
     try {
-      const data = await profileHelpers.getProfile(userId);
+      console.log('🔄 Chargement du profil pour:', userId);
       
-      if (!data) {
+      // Toujours récupérer depuis la base de données (pas de cache)
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+      
+      if (error) {
+        console.error('Erreur chargement profil:', error);
+        
         // Si le profil n'existe pas, créer un profil par défaut
-        const { data: userData } = await supabase.auth.getUser();
-        if (userData.user) {
-          const username = userData.user.email?.split('@')[0] || 'User';
-          const randomEmoji = ['😊', '🎬', '🍿', '🎭', '🎪', '🎨'][Math.floor(Math.random() * 6)];
-          const randomColor = ['bg-red-600', 'bg-blue-600', 'bg-green-600', 'bg-purple-600', 'bg-pink-600'][Math.floor(Math.random() * 5)];
-          
-          await supabase.from('profiles').insert({
-            user_id: userId,
-            username,
-            avatar_url: `${randomEmoji}|${randomColor}`,
-          });
-          
-          // Recharger le profil
-          const newProfile = await profileHelpers.getProfile(userId);
-          setProfile(newProfile);
+        if (error.code === 'PGRST116') {
+          const { data: userData } = await supabase.auth.getUser();
+          if (userData.user) {
+            const username = (userData.user.email?.split('@')[0] || 'User')
+              .toLowerCase()
+              .replace(/\s+/g, '_')
+              .replace(/[^a-z0-9_]/g, '')
+              .substring(0, 20);
+            
+            const randomEmoji = ['😊', '🎬', '🍿', '🎭', '🎪', '🎨'][Math.floor(Math.random() * 6)];
+            const randomColor = ['bg-red-600', 'bg-blue-600', 'bg-green-600', 'bg-purple-600', 'bg-pink-600'][Math.floor(Math.random() * 5)];
+            
+            const { error: insertError } = await supabase.from('profiles').insert({
+              user_id: userId,
+              username,
+              display_name: username,
+              avatar_url: `${randomEmoji}|${randomColor}`,
+            });
+            
+            if (insertError) {
+              console.error('Erreur création profil:', insertError);
+            } else {
+              // Recharger le profil nouvellement créé
+              const { data: newProfile } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('user_id', userId)
+                .single();
+              
+              if (newProfile) {
+                console.log('✅ Profil créé et chargé:', newProfile.username);
+                setProfile(newProfile);
+              }
+            }
+          }
         }
       } else {
+        console.log('✅ Profil chargé:', data.username);
         setProfile(data);
       }
     } catch (error) {
       console.error('Error loading profile:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Fonction pour rafraîchir manuellement le profil
+  const refreshProfile = async () => {
+    if (user) {
+      console.log('🔄 Rafraîchissement manuel du profil...');
+      await loadProfile(user.id, true);
     }
   };
 
@@ -150,7 +190,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, pinVerified, setPinVerified: updatePinVerified, signOut }}>
+    <AuthContext.Provider value={{ user, profile, loading, pinVerified, setPinVerified: updatePinVerified, signOut, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

@@ -51,6 +51,7 @@ export interface Favorite {
   title: string;
   poster_path?: string;
   created_at: string;
+  is_favorite?: boolean;
 }
 
 export interface WatchHistory {
@@ -77,12 +78,26 @@ export interface WatchParty {
 // Fonctions d'authentification
 export const authHelpers = {
   signUp: async (email: string, password: string, username: string) => {
+    // Nettoyer le username : remplacer espaces par underscores, tout en minuscules
+    const cleanedUsername = username
+      .trim() // Retirer espaces début/fin
+      .toLowerCase()
+      .replace(/\s+/g, '_') // Remplacer espaces par underscores
+      .replace(/[^a-z0-9_]/g, '') // Retirer caractères spéciaux
+      .replace(/_+$/g, '') // Retirer underscores à la fin
+      .replace(/^_+/g, '') // Retirer underscores au début
+      .substring(0, 20);
+    
+    if (cleanedUsername.length < 3) {
+      throw new Error('Le nom d\'utilisateur doit contenir au moins 3 caractères');
+    }
+    
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: {
-          username,
+          username: cleanedUsername,
         },
         emailRedirectTo: undefined,
       },
@@ -90,22 +105,40 @@ export const authHelpers = {
     
     if (error) throw error;
     
-    // Attendre un peu que l'utilisateur soit créé dans auth.users
+    // Créer le profil immédiatement
     if (data.user) {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Attendre un peu pour éviter les race conditions
+      await new Promise(resolve => setTimeout(resolve, 500));
       
-      const { error: profileError } = await supabase
+      // Vérifier si le profil existe déjà (créé par trigger)
+      const { data: existingProfile } = await supabase
         .from('profiles')
-        .insert([
-          {
-            user_id: data.user.id,
-            username,
-          },
-        ]);
+        .select('user_id')
+        .eq('user_id', data.user.id)
+        .single();
       
-      if (profileError) {
-        console.error('Profile creation error:', profileError);
-        // Ne pas throw l'erreur, le profil sera créé via trigger
+      // Si le profil n'existe pas, le créer
+      if (!existingProfile) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert([
+            {
+              user_id: data.user.id,
+              username: cleanedUsername,
+              display_name: cleanedUsername,
+              avatar_url: '🎬|bg-red-600',
+              bio: null,
+              banner_url: null,
+              is_private: false,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            },
+          ]);
+        
+        if (profileError) {
+          console.error('Profile creation error:', profileError);
+          throw new Error('Impossible de créer le profil. Veuillez réessayer.');
+        }
       }
     }
     
@@ -171,7 +204,7 @@ export const favoritesHelpers = {
   getFavorites: async (userId: string) => {
     const { data, error } = await supabase
       .from('favorites')
-      .select('id, user_id, media_id, media_type, title, poster_path, created_at')
+      .select('id, user_id, media_id, media_type, title, poster_path, created_at, is_favorite')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
       .limit(50);

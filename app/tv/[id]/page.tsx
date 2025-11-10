@@ -2,11 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { Play, Plus, ThumbsUp, Share2, Star, Calendar, Tv, Users } from 'lucide-react';
+import { Heart, Eye, Star, Calendar, Tv, Users } from 'lucide-react';
 import Link from 'next/link';
 import MovieCard from '@/components/MovieCard';
-import SeasonSelector from '@/components/SeasonSelector';
 import AddToListButton from '@/components/AddToListButton';
+import RatingModal from '@/components/RatingModal';
+import { useAuth } from '@/contexts/AuthContext';
+import { favoritesHelpers } from '@/lib/supabase';
+import { ratingsHelpers } from '@/lib/ratings';
 import { api, getImageUrl, getTitle, getReleaseDate } from '@/lib/api';
 import Navbar from '@/components/Navbar';
 import MovieRow from '@/components/MovieRow';
@@ -14,10 +17,15 @@ import MovieRow from '@/components/MovieRow';
 export default function TVPage() {
   const params = useParams();
   const tvId = parseInt(params.id as string);
+  const { user } = useAuth();
   const [tvShow, setTvShow] = useState<any>(null);
   const [videos, setVideos] = useState<any[]>([]);
   const [similar, setSimilar] = useState<any[]>([]);
   const [cast, setCast] = useState<any[]>([]);
+  const [isLiked, setIsLiked] = useState(false);
+  const [isWatched, setIsWatched] = useState(false);
+  const [userRating, setUserRating] = useState<number | null>(null);
+  const [showRatingModal, setShowRatingModal] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -45,6 +53,57 @@ export default function TVPage() {
 
     loadTVShow();
   }, [tvId]);
+
+  useEffect(() => {
+    const checkStatus = async () => {
+      if (!user) return;
+      
+      try {
+        const favorites = await favoritesHelpers.getFavorites(user.id);
+        const isFav = favorites.some((f: any) => f.media_id === tvId);
+        setIsLiked(isFav);
+        
+        const rating = await ratingsHelpers.getUserRating(user.id, tvId, 'tv');
+        if (rating) {
+          setIsWatched(rating.is_watched || false);
+          setUserRating(rating.rating || null);
+          setIsLiked(rating.is_liked || false);
+        }
+      } catch (error) {
+        console.error('Error checking status:', error);
+      }
+    };
+
+    checkStatus();
+  }, [user, tvId]);
+
+  const toggleFavorite = async () => {
+    if (!user) {
+      alert('Connectez-vous pour ajouter des favoris');
+      return;
+    }
+    
+    if (!tvShow) return;
+
+    try {
+      if (isLiked) {
+        await favoritesHelpers.removeFromFavorites(user.id, tvId);
+        setIsLiked(false);
+      } else {
+        await favoritesHelpers.addToFavorites(
+          user.id,
+          tvId,
+          'tv',
+          getTitle(tvShow),
+          tvShow.poster_path || ''
+        );
+        setIsLiked(true);
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      alert('Erreur lors de l\'ajout aux favoris.');
+    }
+  };
 
   if (loading) {
     return (
@@ -104,12 +163,25 @@ export default function TVPage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-3 mb-6">
-              <Link href={`/watch/tv/${tvId}`}>
-                <button className="flex items-center gap-2 bg-white text-black px-8 py-3 rounded font-semibold hover:bg-white/80 transition">
-                  <Play size={24} fill="currentColor" />
-                  <span>Lecture</span>
-                </button>
-              </Link>
+              <button 
+                onClick={() => setShowRatingModal(true)}
+                className="flex items-center gap-2 bg-white text-black px-8 py-3 rounded font-semibold hover:bg-white/80 transition"
+              >
+                <Star size={20} fill={userRating ? 'currentColor' : 'none'} />
+                <span>{userRating ? `Noté ${userRating}/5` : 'Noter'}</span>
+              </button>
+
+              <button 
+                onClick={toggleFavorite}
+                className={`flex items-center gap-2 px-6 py-3 rounded font-semibold transition ${
+                  isLiked 
+                    ? 'bg-red-600 hover:bg-red-700' 
+                    : 'bg-gray-800 hover:bg-gray-700'
+                }`}
+              >
+                <Heart size={20} fill={isLiked ? 'currentColor' : 'none'} />
+                <span>J'aime</span>
+              </button>
 
               <AddToListButton
                 mediaId={tvId}
@@ -157,7 +229,7 @@ export default function TVPage() {
             <div className="space-y-4 text-sm">
               <div>
                 <span className="text-gray-400">Genres: </span>
-                <span>{tvShow.genres.map((g) => g.name).join(', ')}</span>
+                <span>{tvShow.genres.map((g: any) => g.name).join(', ')}</span>
               </div>
 
               <div>
@@ -192,21 +264,21 @@ export default function TVPage() {
               {tvShow.created_by && tvShow.created_by.length > 0 && (
                 <div>
                   <span className="text-gray-400">Créé par: </span>
-                  <span>{tvShow.created_by.map((c) => c.name).join(', ')}</span>
+                  <span>{tvShow.created_by.map((c: any) => c.name).join(', ')}</span>
                 </div>
               )}
 
               {tvShow.networks && tvShow.networks.length > 0 && (
                 <div>
                   <span className="text-gray-400">Réseau: </span>
-                  <span>{tvShow.networks.map((n) => n.name).join(', ')}</span>
+                  <span>{tvShow.networks.map((n: any) => n.name).join(', ')}</span>
                 </div>
               )}
 
               {tvShow.production_companies.length > 0 && (
                 <div>
                   <span className="text-gray-400">Production: </span>
-                  <span>{tvShow.production_companies.map((c) => c.name).join(', ')}</span>
+                  <span>{tvShow.production_companies.map((c: any) => c.name).join(', ')}</span>
                 </div>
               )}
             </div>
@@ -216,7 +288,10 @@ export default function TVPage() {
         {/* Cast */}
         {cast.length > 0 && (
           <div className="pb-16 px-4 md:px-16">
-            <h2 className="text-xl md:text-2xl font-semibold mb-6">Distribution</h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl md:text-3xl font-bold">Distribution</h2>
+              <span className="text-sm text-gray-400">{cast.length} acteurs</span>
+            </div>
             <div className="relative">
               {/* Left Arrow */}
               <button
@@ -238,22 +313,25 @@ export default function TVPage() {
                 style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
               >
                 {cast.map((actor: any) => (
-                  <Link key={actor.id} href={`/person/${actor.id}`} className="flex-shrink-0 w-24 md:w-28 group cursor-pointer">
-                    <div className="relative aspect-[2/3] rounded-md overflow-hidden bg-gray-800 mb-2 transition-transform duration-200 group-hover:-translate-y-1">
+                  <Link key={actor.id} href={`/person/${actor.id}`} className="flex-shrink-0 w-32 md:w-36 group cursor-pointer">
+                    <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-gray-800 mb-3 shadow-lg transition-all duration-300 group-hover:scale-105 group-hover:shadow-2xl">
                       {actor.profile_path ? (
                         <img
                           src={`https://image.tmdb.org/t/p/w185${actor.profile_path}`}
                           alt={actor.name}
-                          className="w-full h-full object-cover brightness-90 group-hover:brightness-100 transition-all duration-200"
+                          className="w-full h-full object-cover"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-600">
-                          <span className="text-2xl">👤</span>
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
+                          <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center">
+                            <span className="text-4xl">👤</span>
+                          </div>
                         </div>
                       )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     </div>
-                    <h3 className="text-xs font-semibold line-clamp-2 mb-0.5 group-hover:text-white transition-colors">{actor.name}</h3>
-                    <p className="text-xs text-gray-500 line-clamp-1 group-hover:text-gray-400 transition-colors">{actor.character}</p>
+                    <h3 className="text-sm font-bold line-clamp-2 mb-1 group-hover:text-purple-400 transition-colors">{actor.name}</h3>
+                    <p className="text-xs text-gray-400 line-clamp-1">{actor.character}</p>
                   </Link>
                 ))}
               </div>
@@ -282,6 +360,28 @@ export default function TVPage() {
             <MovieRow title="Séries similaires" media={similar} />
           </div>
         )}
+
+        {/* Rating Modal */}
+        <RatingModal
+          isOpen={showRatingModal}
+          onClose={() => setShowRatingModal(false)}
+          mediaId={tvId}
+          mediaType="tv"
+          mediaTitle={getTitle(tvShow)}
+          mediaPoster={tvShow.poster_path}
+          onSuccess={() => {
+            // Recharger les données
+            if (user) {
+              ratingsHelpers.getUserRating(user.id, tvId, 'tv').then(rating => {
+                if (rating) {
+                  setIsWatched(rating.is_watched || false);
+                  setUserRating(rating.rating || null);
+                  setIsLiked(rating.is_liked || false);
+                }
+              });
+            }
+          }}
+        />
       </div>
     );
 }

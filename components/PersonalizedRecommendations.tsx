@@ -20,7 +20,7 @@ export default function PersonalizedRecommendations() {
           </div>
           <div className="flex gap-4">
             {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="min-w-[120px] md:min-w-[160px] aspect-[2/3] bg-gray-800 rounded-md animate-pulse" />
+              <div key={i} className="min-w-[100px] md:min-w-[130px] aspect-[2/3] bg-gray-800 rounded-md animate-pulse" />
             ))}
           </div>
         </div>
@@ -66,9 +66,14 @@ export default function PersonalizedRecommendations() {
   return (
     <div className="mb-8">
       <div className="px-4 md:px-16">
-        <div className="flex items-center gap-2 mb-4">
-          <Sparkles className="text-purple-400" size={24} />
-          <h2 className="text-xl md:text-2xl font-semibold">Recommandé pour vous</h2>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Sparkles className="text-purple-400" size={24} />
+            <h2 className="text-xl md:text-2xl font-semibold">Recommandé pour vous</h2>
+          </div>
+          <p className="text-xs text-gray-500 hidden md:block">
+            Basé sur vos {recommendations.length > 0 ? 'favoris et likes' : 'préférences'}
+          </p>
         </div>
       </div>
       <MovieRow title="" media={recommendations} />

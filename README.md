@@ -1,8 +1,10 @@
-# 🎬 Netflix Clone
+# 🎬 ReelVibe
 
-Un clone Netflix moderne et élégant construit avec Next.js 15, React 19, TypeScript et Tailwind CSS.
+**Ressentez chaque film** - Une plateforme sociale de découverte et curation de films.
 
-![Netflix Clone](https://img.shields.io/badge/Next.js-15.5.6-black?style=for-the-badge&logo=next.js)
+Plateforme moderne de gestion de films inspirée de Letterboxd, avec analyse émotionnelle, recommandations sociales et cinéma collaboratif.
+
+![ReelVibe](https://img.shields.io/badge/Next.js-15.5.6-black?style=for-the-badge&logo=next.js)
 ![React](https://img.shields.io/badge/React-19.1.0-blue?style=for-the-badge&logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.0-38bdf8?style=for-the-badge&logo=tailwind-css)

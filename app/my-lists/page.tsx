@@ -91,7 +91,7 @@ export default function MyListsPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#141414] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-white"></div>
+        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-purple-500"></div>
       </div>
     );
   }
@@ -103,7 +103,7 @@ export default function MyListsPage() {
         <div className="pt-32 px-4 md:px-16 text-center">
           <h1 className="text-4xl font-bold mb-4">Connectez-vous</h1>
           <p className="text-gray-400 mb-8">Vous devez être connecté pour voir vos listes</p>
-          <Link href="/auth/login" className="inline-block px-6 py-3 bg-red-600 rounded font-semibold hover:bg-red-700 transition">
+          <Link href="/auth/login" className="inline-block px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition shadow-lg">
             Se connecter
           </Link>
         </div>
@@ -118,10 +118,18 @@ export default function MyListsPage() {
       <div className="pt-24 px-4 md:px-16 pb-20">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold">Mes Listes</h1>
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+              <Folder size={24} />
+            </div>
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold">Mes Listes</h1>
+              <p className="text-gray-400">{lists.length} liste(s)</p>
+            </div>
+          </div>
           <button
             onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-white text-black rounded font-semibold hover:bg-gray-200 transition"
+            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition shadow-lg"
           >
             <Plus size={20} />
             Nouvelle liste
@@ -255,7 +263,7 @@ export default function MyListsPage() {
                 <button
                   onClick={createList}
                   disabled={!newListName.trim()}
-                  className="flex-1 px-4 py-2 bg-white text-black rounded font-semibold hover:bg-gray-200 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed transition"
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 disabled:from-gray-700 disabled:to-gray-700 disabled:cursor-not-allowed transition shadow-lg"
                 >
                   Créer
                 </button>
@@ -265,7 +273,7 @@ export default function MyListsPage() {
                     setNewListName('');
                     setNewListDescription('');
                   }}
-                  className="flex-1 px-4 py-2 bg-gray-800 rounded font-semibold hover:bg-gray-700 transition"
+                  className="flex-1 px-6 py-3 bg-white/10 rounded-lg font-semibold hover:bg-white/20 transition"
                 >
                   Annuler
                 </button>

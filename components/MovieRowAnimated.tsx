@@ -97,13 +97,13 @@ export default function MovieRowAnimated({ title, media }: MovieRowProps) {
           style={{ 
             scrollbarWidth: 'none', 
             msOverflowStyle: 'none',
-            overflowY: 'visible'
+            overflowY: 'hidden'
           }}
         >
           {media.map((item) => (
             <div 
               key={item.id} 
-              className="min-w-[150px] md:min-w-[200px]"
+              className="min-w-[120px] md:min-w-[150px]"
             >
               <MovieCard media={item} />
             </div>

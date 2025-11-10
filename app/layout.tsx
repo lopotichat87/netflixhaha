@@ -5,6 +5,7 @@ import "./nprogress.css";
 import Script from "next/script";
 import { Suspense } from "react";
 import { AuthProvider } from '@/contexts/AuthContext';
+import { ThemeProvider } from '@/contexts/ThemeContext';
 import PinGuard from '@/components/PinGuard';
 import ProgressBar from '@/components/ProgressBar';
 import QueryProvider from '@/components/QueryProvider';
@@ -91,18 +92,20 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <QueryProvider>
-          <AuthProvider>
-            <PinGuard>
-              {/* <ActivityTracker /> */}
-              <PopupBlocker />
-              <Suspense fallback={null}>
-                <ProgressBar />
-              </Suspense>
-              {children}
-            </PinGuard>
-          </AuthProvider>
-        </QueryProvider>
+        <ThemeProvider>
+          <QueryProvider>
+            <AuthProvider>
+              <PinGuard>
+                {/* <ActivityTracker /> */}
+                <PopupBlocker />
+                <Suspense fallback={null}>
+                  <ProgressBar />
+                </Suspense>
+                {children}
+              </PinGuard>
+            </AuthProvider>
+          </QueryProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

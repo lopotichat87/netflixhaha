@@ -58,9 +58,15 @@ function LoginForm() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative z-10 w-full max-w-md bg-black/75 p-12 rounded-lg"
+        className="relative z-10 w-full max-w-md bg-black/90 backdrop-blur-sm p-12 rounded-2xl border border-purple-500/20"
       >
-        <h1 className="text-3xl font-bold mb-8">Connexion</h1>
+        <Link href="/landing" className="inline-block mb-6">
+          <div className="text-3xl font-bold bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500 bg-clip-text text-transparent">
+            ReelVibe
+          </div>
+        </Link>
+        <h1 className="text-3xl font-bold mb-2">Bon retour !</h1>
+        <p className="text-gray-400 mb-8">Connectez-vous à votre compte</p>
 
         {successMessage && (
           <div className="mb-4 p-4 bg-green-600/20 border border-green-600 rounded text-sm flex items-start gap-3">
@@ -116,17 +122,32 @@ function LoginForm() {
             </div>
           </div>
 
+          <div className="flex items-center justify-between text-sm">
+            <label className="flex items-center gap-2 cursor-pointer text-gray-400">
+              <input type="checkbox" className="w-4 h-4 rounded" />
+              <span>Se souvenir de moi</span>
+            </label>
+            <Link href="/auth/forgot-password" className="text-purple-400 hover:text-purple-300 transition">
+              Mot de passe oublié ?
+            </Link>
+          </div>
+
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-red-600 hover:bg-red-700 disabled:bg-gray-700 py-3 rounded font-semibold transition"
+            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-gray-700 disabled:to-gray-700 py-3 rounded-lg font-semibold transition shadow-lg shadow-purple-500/30"
           >
-            {loading ? 'Connexion...' : 'Se connecter'}
+            {loading ? (
+              <div className="flex items-center justify-center gap-2">
+                <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
+                Connexion...
+              </div>
+            ) : 'Se connecter'}
           </button>
         </form>
 
         <div className="mt-6 text-center text-gray-400">
-          <span>Nouveau sur Netflix Clone ? </span>
+          <span>Nouveau sur ReelVibe ? </span>
           <Link href="/auth/signup" className="text-white hover:underline">
             Inscrivez-vous maintenant
           </Link>

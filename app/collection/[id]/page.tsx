@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Link from 'next/link';
-import { Play } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function CollectionPage() {
@@ -77,8 +76,8 @@ export default function CollectionPage() {
 
       {/* Films de la collection */}
       <div className="px-4 md:px-16 py-12">
-        <div className="flex items-center gap-2 mb-8">
-          <div className="w-1 h-6 bg-red-600 rounded-full" />
+        <div className="flex items-center gap-3 mb-8">
+          <div className="w-1.5 h-8 bg-gradient-to-b from-purple-600 to-pink-600 rounded-full" />
           <h2 className="text-2xl md:text-3xl font-bold">
             {collection.parts?.length} {collection.parts?.length > 1 ? 'Films' : 'Film'}
           </h2>
@@ -116,15 +115,39 @@ export default function CollectionPage() {
                       )}
                       
                       {/* Badge numéro */}
-                      <div className="absolute top-2 left-2 bg-black/90 backdrop-blur-sm px-2 py-1 rounded-md">
+                      <div className="absolute top-2 left-2 bg-gradient-to-br from-purple-600 to-pink-600 backdrop-blur-sm px-2.5 py-1 rounded-lg shadow-lg">
                         <span className="text-xs font-bold text-white">#{index + 1}</span>
                       </div>
 
-                      {/* Overlay hover */}
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/60 transition-colors flex items-center justify-center">
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                          <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                            <Play size={20} fill="white" className="text-white ml-0.5" />
+                      {/* Overlay hover avec infos */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
+                        <div className="space-y-2">
+                          {/* Note TMDB */}
+                          {movie.vote_average > 0 && (
+                            <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-1">
+                                <span className="text-xs font-semibold text-green-400">
+                                  {Math.round(movie.vote_average * 10)}%
+                                </span>
+                                <span className="text-xs text-gray-400">
+                                  ({movie.vote_count} votes)
+                                </span>
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* Description courte */}
+                          {movie.overview && (
+                            <p className="text-xs text-gray-300 line-clamp-3 leading-relaxed">
+                              {movie.overview}
+                            </p>
+                          )}
+                          
+                          {/* Bouton d'action */}
+                          <div className="flex gap-2 pt-1">
+                            <div className="px-3 py-1.5 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg text-xs font-semibold">
+                              Voir détails
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -132,7 +155,7 @@ export default function CollectionPage() {
 
                     {/* Info */}
                     <div className="px-1">
-                      <h3 className="text-sm font-semibold line-clamp-2 mb-1 group-hover:text-red-500 transition-colors">
+                      <h3 className="text-sm font-semibold line-clamp-2 mb-1 group-hover:text-purple-400 transition-colors">
                         {movie.title}
                       </h3>
                       {movie.release_date && (

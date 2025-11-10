@@ -4,35 +4,39 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import MovieCard from '@/components/MovieCard';
-import { ArrowLeft, Calendar, MapPin, Briefcase, Film, Tv } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Briefcase, Film, Tv, Heart } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 import { motion } from 'framer-motion';
 
 export default function PersonPage() {
   const params = useParams();
   const personId = parseInt(params.id as string);
-  
+
+  const { user } = useAuth();
   const [person, setPerson] = useState<any>(null);
   const [credits, setCredits] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [favLoading, setFavLoading] = useState(false);
 
   useEffect(() => {
     const loadPerson = async () => {
       try {
         const API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
-        
+
         const [personData, creditsData] = await Promise.all([
           fetch(`https://api.themoviedb.org/3/person/${personId}?api_key=${API_KEY}&language=fr-FR`).then(res => res.json()),
           fetch(`https://api.themoviedb.org/3/person/${personId}/combined_credits?api_key=${API_KEY}&language=fr-FR`).then(res => res.json()),
         ]);
 
         setPerson(personData);
-        
+
         // Trier par popularité et prendre les 20 premiers
         const sortedCredits = [...(creditsData.cast || []), ...(creditsData.crew || [])]
           .filter((item: any) => item.poster_path)
           .sort((a: any, b: any) => (b.popularity || 0) - (a.popularity || 0))
           .slice(0, 20);
-        
+
         setCredits(sortedCredits);
       } catch (error) {
         console.error('Error loading person:', error);
@@ -42,7 +46,65 @@ export default function PersonPage() {
     };
 
     loadPerson();
-  }, [personId]);
+    if (user) {
+      checkFavorite();
+    }
+  }, [personId, user]);
+
+  const checkFavorite = async () => {
+    if (!user) return;
+    try {
+      const { supabase } = await import('@/lib/supabase');
+      const { data } = await supabase
+        .from('favorite_actors')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('actor_id', personId)
+        .single();
+      
+      setIsFavorite(!!data);
+    } catch (error) {
+      // Pas en favori
+    }
+  };
+
+  const toggleFavorite = async () => {
+    if (!user) {
+      alert('Vous devez être connecté pour ajouter un acteur en favori');
+      return;
+    }
+
+    setFavLoading(true);
+    try {
+      const { supabase } = await import('@/lib/supabase');
+
+      if (isFavorite) {
+        // Retirer des favoris
+        await supabase
+          .from('favorite_actors')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('actor_id', personId);
+        setIsFavorite(false);
+      } else {
+        // Ajouter aux favoris
+        await supabase
+          .from('favorite_actors')
+          .insert({
+            user_id: user.id,
+            actor_id: personId,
+            actor_name: person.name,
+            actor_profile_path: person.profile_path,
+          });
+        setIsFavorite(true);
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      alert('Erreur lors de la mise à jour des favoris');
+    } finally {
+      setFavLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -77,14 +139,14 @@ export default function PersonPage() {
             />
           </div>
         )}
-        
+
         {/* Background avec gradient */}
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#141414]/60 to-[#141414]" />
         <div className="absolute inset-0 bg-gradient-to-r from-[#141414] via-transparent to-[#141414]/80" />
-        
+
         {/* Contenu Hero */}
         <div className="relative h-full px-4 md:px-16 pt-24 pb-12">
-          <button 
+          <button
             onClick={() => window.history.back()}
             className="inline-flex items-center gap-2 text-white/80 hover:text-white transition mb-8"
           >
@@ -122,7 +184,7 @@ export default function PersonPage() {
               className="flex-1"
             >
               <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-bold mb-3">{person.name}</h1>
-              
+
               {/* Métier et infos */}
               <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-4 text-sm md:text-base">
                 {person.known_for_department && (
@@ -153,7 +215,21 @@ export default function PersonPage() {
                   </>
                 )}
               </div>
-              
+
+              {/* Bouton Favori */}
+              <button
+                onClick={toggleFavorite}
+                disabled={favLoading}
+                className={`mt-4 flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all ${
+                  isFavorite
+                    ? 'bg-gradient-to-r from-pink-500 to-red-500 text-white'
+                    : 'bg-white/10 hover:bg-white/20 text-white'
+                } disabled:opacity-50`}
+              >
+                <Heart size={20} fill={isFavorite ? 'currentColor' : 'none'} />
+                <span>{isFavorite ? 'Acteur favori' : 'Ajouter aux favoris'}</span>
+              </button>
+
               {/* Stats */}
               <div className="flex items-center gap-4 md:gap-6 mt-4">
                 <div className="flex items-center gap-1.5 md:gap-2">
@@ -167,7 +243,7 @@ export default function PersonPage() {
                   <span className="text-gray-400 text-xs md:text-sm">Séries</span>
                 </div>
               </div>
-              
+
               {/* Description courte */}
               {person.biography && (
                 <p className="text-gray-300 max-w-3xl line-clamp-2 sm:line-clamp-3 text-xs sm:text-sm md:text-base leading-relaxed mt-4">
@@ -206,7 +282,7 @@ export default function PersonPage() {
               transition={{ delay: 0.3 }}
             >
               <h2 className="text-3xl font-bold mb-6">Filmographie</h2>
-              
+
               {/* Films */}
               {movies.length > 0 && (
                 <div className="mb-12">

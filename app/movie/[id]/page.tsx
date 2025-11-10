@@ -5,12 +5,15 @@ import { useParams } from 'next/navigation';
 import { api, getImageUrl, getTitle } from '@/lib/api';
 import Navbar from '@/components/Navbar';
 import MovieRow from '@/components/MovieRow';
-import { Play, Plus, ThumbsUp, Share2, Star, Calendar, Clock, Film, Users } from 'lucide-react';
+import { Heart, Eye, Star, Calendar, Clock, Film, Users } from 'lucide-react';
 import Link from 'next/link';
 import MovieCard from '@/components/MovieCard';
 import AddToListButton from '@/components/AddToListButton';
+import RatingModal from '@/components/RatingModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { favoritesHelpers } from '@/lib/supabase';
+import { ratingsHelpers } from '@/lib/ratings';
+import Comments from '@/components/Comments';
 
 export default function MoviePage() {
   const params = useParams();
@@ -23,7 +26,9 @@ export default function MoviePage() {
   const [collection, setCollection] = useState<any>(null);
   const [cast, setCast] = useState<any[]>([]);
   const [isLiked, setIsLiked] = useState(false);
-  const [isInList, setIsInList] = useState(false);
+  const [isWatched, setIsWatched] = useState(false);
+  const [userRating, setUserRating] = useState<number | null>(null);
+  const [showRatingModal, setShowRatingModal] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -64,19 +69,26 @@ export default function MoviePage() {
   }, [movieId]);
 
   useEffect(() => {
-    const checkFavorite = async () => {
+    const checkStatus = async () => {
       if (!user) return;
       
       try {
         const favorites = await favoritesHelpers.getFavorites(user.id);
         const isFav = favorites.some((f: any) => f.media_id === movieId);
         setIsLiked(isFav);
+        
+        const rating = await ratingsHelpers.getUserRating(user.id, movieId, 'movie');
+        if (rating) {
+          setIsWatched(rating.is_watched || false);
+          setUserRating(rating.rating || null);
+          setIsLiked(rating.is_liked || false);
+        }
       } catch (error) {
-        console.error('Error checking favorite:', error);
+        console.error('Error checking status:', error);
       }
     };
 
-    checkFavorite();
+    checkStatus();
   }, [user, movieId]);
 
   const toggleFavorite = async () => {
@@ -161,12 +173,25 @@ export default function MoviePage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-3 mb-6">
-              <Link href={`/watch/movie/${movieId}`}>
-                <button className="flex items-center gap-2 bg-white text-black px-8 py-3 rounded font-semibold hover:bg-white/80 transition">
-                  <Play size={24} fill="currentColor" />
-                  <span>Lecture</span>
-                </button>
-              </Link>
+              <button 
+                onClick={() => setShowRatingModal(true)}
+                className="flex items-center gap-2 bg-white text-black px-8 py-3 rounded font-semibold hover:bg-white/80 transition"
+              >
+                <Star size={20} fill={userRating ? 'currentColor' : 'none'} />
+                <span>{userRating ? `Noté ${userRating}/5` : 'Noter'}</span>
+              </button>
+
+              <button 
+                onClick={toggleFavorite}
+                className={`flex items-center gap-2 px-6 py-3 rounded font-semibold transition ${
+                  isLiked 
+                    ? 'bg-red-600 hover:bg-red-700' 
+                    : 'bg-gray-800 hover:bg-gray-700'
+                }`}
+              >
+                <Heart size={20} fill={isLiked ? 'currentColor' : 'none'} />
+                <span>J'aime</span>
+              </button>
 
               <AddToListButton
                 mediaId={movieId}
@@ -174,17 +199,6 @@ export default function MoviePage() {
                 title={movie.title}
                 posterPath={movie.poster_path}
               />
-
-              <button 
-                onClick={toggleFavorite}
-                className={`w-12 h-12 rounded-full border-2 flex items-center justify-center transition ${
-                  isLiked 
-                    ? 'bg-green-500 border-green-500 text-white' 
-                    : 'border-gray-400 hover:border-white'
-                }`}
-              >
-                <ThumbsUp size={20} fill={isLiked ? 'currentColor' : 'none'} />
-              </button>
             </div>
 
             <p className="text-base md:text-lg line-clamp-4 drop-shadow-xl max-w-xl">
@@ -279,8 +293,8 @@ export default function MoviePage() {
         {/* Collection */}
         {collection && collection.parts && collection.parts.length > 1 && (
           <div className="pb-16 px-4 md:px-16">
-            {/* Banner avec backdrop */}
-            <div className="relative h-24 md:h-28 rounded-lg overflow-hidden mb-6">
+            {/* Banner avec backdrop amélioré */}
+            <div className="relative h-32 md:h-40 rounded-2xl overflow-hidden mb-8 shadow-2xl">
               <div className="absolute inset-0">
                 {collection.backdrop_path && (
                   <img
@@ -289,21 +303,27 @@ export default function MoviePage() {
                     className="w-full h-full object-cover"
                   />
                 )}
-                <div className="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-r from-black via-black/60 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
               </div>
               
-              <div className="relative h-full flex items-center justify-between px-4 md:px-6">
-                <div>
-                  <span className="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1 block">Saga</span>
-                  <h2 className="text-lg md:text-xl font-bold">{collection.name}</h2>
+              <div className="relative h-full flex flex-col justify-end p-6 md:p-8">
+                <div className="flex items-end justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-xs text-purple-400 uppercase tracking-wider font-bold bg-purple-500/20 px-2 py-1 rounded">Saga</span>
+                      <span className="text-xs text-gray-400">{collection.parts.length} films</span>
+                    </div>
+                    <h2 className="text-2xl md:text-3xl font-bold">{collection.name}</h2>
+                  </div>
+                  <Link 
+                    href={`/collection/${collection.id}`}
+                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-4 py-2 md:px-6 md:py-3 rounded-lg text-sm md:text-base font-semibold transition shadow-lg flex items-center gap-2"
+                  >
+                    <span>Voir tout</span>
+                    <span className="text-lg">→</span>
+                  </Link>
                 </div>
-                <Link 
-                  href={`/collection/${collection.id}`}
-                  className="bg-white/10 backdrop-blur-sm hover:bg-white/20 px-3 py-1.5 md:px-4 md:py-2 rounded-lg text-xs md:text-sm font-semibold transition flex items-center gap-2"
-                >
-                  <span>Voir tout</span>
-                  <span>→</span>
-                </Link>
               </div>
             </div>
 
@@ -329,7 +349,10 @@ export default function MoviePage() {
         {/* Cast */}
         {cast.length > 0 && (
           <div className="pb-16 px-4 md:px-16">
-            <h2 className="text-xl md:text-2xl font-semibold mb-6">Distribution</h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl md:text-3xl font-bold">Distribution</h2>
+              <span className="text-sm text-gray-400">{cast.length} acteurs</span>
+            </div>
             <div className="relative">
               {/* Left Arrow */}
               <button
@@ -371,22 +394,26 @@ export default function MoviePage() {
                 style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
               >
                 {cast.map((actor: any) => (
-                  <Link key={actor.id} href={`/person/${actor.id}`} className="flex-shrink-0 w-24 md:w-28 group cursor-pointer">
-                    <div className="relative aspect-[2/3] rounded-md overflow-hidden bg-gray-800 mb-2 transition-transform duration-200 group-hover:-translate-y-1">
+                  <Link key={actor.id} href={`/person/${actor.id}`} className="flex-shrink-0 w-32 md:w-36 group cursor-pointer">
+                    <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-gray-800 mb-3 shadow-lg transition-all duration-300 group-hover:scale-105 group-hover:shadow-2xl">
                       {actor.profile_path ? (
                         <img
                           src={`https://image.tmdb.org/t/p/w185${actor.profile_path}`}
                           alt={actor.name}
-                          className="w-full h-full object-cover brightness-90 group-hover:brightness-100 transition-all duration-200"
+                          className="w-full h-full object-cover"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-600">
-                          <span className="text-2xl">👤</span>
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
+                          <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center">
+                            <span className="text-4xl">👤</span>
+                          </div>
                         </div>
                       )}
+                      {/* Gradient overlay au hover */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     </div>
-                    <h3 className="text-xs font-semibold line-clamp-2 mb-0.5 group-hover:text-white transition-colors">{actor.name}</h3>
-                    <p className="text-xs text-gray-500 line-clamp-1 group-hover:text-gray-400 transition-colors">{actor.character}</p>
+                    <h3 className="text-sm font-bold line-clamp-2 mb-1 group-hover:text-purple-400 transition-colors">{actor.name}</h3>
+                    <p className="text-xs text-gray-400 line-clamp-1">{actor.character}</p>
                   </Link>
                 ))}
               </div>
@@ -409,12 +436,39 @@ export default function MoviePage() {
           </div>
         )}
 
+        {/* Comments Section */}
+        <div className="py-16 px-4 md:px-16">
+          <Comments mediaId={movieId} mediaType="movie" />
+        </div>
+
         {/* Similar Movies */}
         {similar.length > 0 && (
           <div className="pb-16">
             <MovieRow title="Films similaires" media={similar} />
           </div>
         )}
+
+        {/* Rating Modal */}
+        <RatingModal
+          isOpen={showRatingModal}
+          onClose={() => setShowRatingModal(false)}
+          mediaId={movieId}
+          mediaType="movie"
+          mediaTitle={movie.title}
+          mediaPoster={movie.poster_path}
+          onSuccess={() => {
+            // Recharger les données
+            if (user) {
+              ratingsHelpers.getUserRating(user.id, movieId, 'movie').then(rating => {
+                if (rating) {
+                  setIsWatched(rating.is_watched || false);
+                  setUserRating(rating.rating || null);
+                  setIsLiked(rating.is_liked || false);
+                }
+              });
+            }
+          }}
+        />
       </div>
     );
 }

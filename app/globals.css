@@ -1,8 +1,25 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Theme Colors - Défaut ReelVibe */
+  --color-primary: #8B5CF6;
+  --color-secondary: #06B6D4;
+  --color-accent: #EC4899;
+  --color-background: #0A0A0A;
+  --color-foreground: #FFFFFF;
+  --color-muted: #6B7280;
+  --color-border: #374151;
+  --color-card: #1F1F1F;
+  --color-card-hover: #2A2A2A;
+  
+  /* Gradients */
+  --gradient-hero: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+  --gradient-card: linear-gradient(180deg, rgba(139, 92, 246, 0.1) 0%, transparent 100%);
+  --gradient-button: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+  
+  /* Legacy */
+  --background: #0a0a0a;
+  --foreground: #ededed;
 }
 
 @theme inline {
@@ -12,17 +29,39 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: Arial, Helvetica, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Utility classes pour utiliser les couleurs du thème */
+.bg-theme-primary { background-color: var(--color-primary) !important; }
+.bg-theme-secondary { background-color: var(--color-secondary) !important; }
+.bg-theme-accent { background-color: var(--color-accent) !important; }
+.bg-theme-card { background-color: var(--color-card) !important; }
+
+.text-theme-primary { color: var(--color-primary) !important; }
+.text-theme-secondary { color: var(--color-secondary) !important; }
+.text-theme-accent { color: var(--color-accent) !important; }
+
+.border-theme-primary { border-color: var(--color-primary) !important; }
+.border-theme-border { border-color: var(--color-border) !important; }
+
+.gradient-theme-button { 
+  background: var(--gradient-button) !important;
+}
+
+.gradient-theme-hero {
+  background: var(--gradient-hero) !important;
+}
+
+/* Appliquer le thème aux boutons gradients existants */
+button[class*="purple-600"],
+a[class*="purple-600"],
+div[class*="purple-600"] {
+  transition: all 0.3s ease;
 }
 
 /* Bloquer les publicités et popups */
