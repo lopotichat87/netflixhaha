@@ -130,17 +130,137 @@ export const themes: Record<string, Theme> = {
       primary: '#7C3AED', // Violet royal
       secondary: '#6D28D9', // Violet profond
       accent: '#A78BFA', // Lavande
-      background: '#1E1B4B', // Indigo très sombre
+      background: '#0A0A0A', // Noir pur
       foreground: '#E0E7FF',
       muted: '#A5B4FC',
       border: '#4C1D95',
-      card: '#312E81',
-      cardHover: '#3730A3',
+      card: '#1A0F2E',
+      cardHover: '#2A1A4A',
     },
     gradients: {
       hero: 'linear-gradient(135deg, #7C3AED 0%, #6D28D9 50%, #A78BFA 100%)',
       card: 'linear-gradient(180deg, rgba(124, 58, 237, 0.15) 0%, transparent 100%)',
       button: 'linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%)',
+    },
+  },
+  midnight: {
+    name: 'midnight',
+    displayName: 'Midnight',
+    colors: {
+      primary: '#3B82F6', // Bleu électrique
+      secondary: '#1E40AF', // Bleu profond
+      accent: '#60A5FA', // Bleu clair
+      background: '#0A0E1A', // Bleu minuit
+      foreground: '#F0F4FF',
+      muted: '#94A3B8',
+      border: '#1E3A5F',
+      card: '#111827',
+      cardHover: '#1F2937',
+    },
+    gradients: {
+      hero: 'linear-gradient(135deg, #3B82F6 0%, #1E40AF 50%, #60A5FA 100%)',
+      card: 'linear-gradient(180deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%)',
+      button: 'linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%)',
+    },
+  },
+  crimson: {
+    name: 'crimson',
+    displayName: 'Crimson',
+    colors: {
+      primary: '#DC2626', // Rouge crimson
+      secondary: '#991B1B', // Rouge sombre
+      accent: '#F87171', // Rouge clair
+      background: '#0A0A0A',
+      foreground: '#FEF2F2',
+      muted: '#B91C1C',
+      border: '#450A0A',
+      card: '#1C0A0A',
+      cardHover: '#2C0F0F',
+    },
+    gradients: {
+      hero: 'linear-gradient(135deg, #DC2626 0%, #991B1B 50%, #F87171 100%)',
+      card: 'linear-gradient(180deg, rgba(220, 38, 38, 0.1) 0%, transparent 100%)',
+      button: 'linear-gradient(135deg, #DC2626 0%, #991B1B 100%)',
+    },
+  },
+  neon: {
+    name: 'neon',
+    displayName: 'Neon',
+    colors: {
+      primary: '#22D3EE', // Cyan néon
+      secondary: '#A855F7', // Violet néon
+      accent: '#F472B6', // Rose néon
+      background: '#0A0A0A',
+      foreground: '#F0FDFA',
+      muted: '#94A3B8',
+      border: '#164E63',
+      card: '#0F1419',
+      cardHover: '#1A1F26',
+    },
+    gradients: {
+      hero: 'linear-gradient(135deg, #22D3EE 0%, #A855F7 50%, #F472B6 100%)',
+      card: 'linear-gradient(180deg, rgba(34, 211, 238, 0.1) 0%, transparent 100%)',
+      button: 'linear-gradient(135deg, #22D3EE 0%, #A855F7 100%)',
+    },
+  },
+  forest: {
+    name: 'forest',
+    displayName: 'Forest',
+    colors: {
+      primary: '#22C55E', // Vert forêt
+      secondary: '#15803D', // Vert sombre
+      accent: '#4ADE80', // Vert clair
+      background: '#0A0F0A',
+      foreground: '#F0FDF4',
+      muted: '#86EFAC',
+      border: '#14532D',
+      card: '#0F1B0F',
+      cardHover: '#1A2C1A',
+    },
+    gradients: {
+      hero: 'linear-gradient(135deg, #22C55E 0%, #15803D 50%, #4ADE80 100%)',
+      card: 'linear-gradient(180deg, rgba(34, 197, 94, 0.1) 0%, transparent 100%)',
+      button: 'linear-gradient(135deg, #22C55E 0%, #15803D 100%)',
+    },
+  },
+  gold: {
+    name: 'gold',
+    displayName: 'Gold',
+    colors: {
+      primary: '#F59E0B', // Or
+      secondary: '#D97706', // Or sombre
+      accent: '#FCD34D', // Or clair
+      background: '#0A0A0A',
+      foreground: '#FFFBEB',
+      muted: '#FDE68A',
+      border: '#78350F',
+      card: '#1C1410',
+      cardHover: '#2C2115',
+    },
+    gradients: {
+      hero: 'linear-gradient(135deg, #F59E0B 0%, #D97706 50%, #FCD34D 100%)',
+      card: 'linear-gradient(180deg, rgba(245, 158, 11, 0.1) 0%, transparent 100%)',
+      button: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
+    },
+  },
+  aurora: {
+    name: 'aurora',
+    displayName: 'Aurora',
+    colors: {
+      primary: '#8B5CF6', // Violet aurore
+      secondary: '#06B6D4', // Cyan aurore
+      accent: '#10B981', // Vert aurore
+      background: '#0A0A0A',
+      foreground: '#F5F3FF',
+      muted: '#C4B5FD',
+      border: '#5B21B6',
+      card: '#1A0F2E',
+      cardHover: '#2A1A3E',
+    },
+    gradients: {
+      hero: 'linear-gradient(135deg, #8B5CF6 0%, #06B6D4 33%, #10B981 66%, #F59E0B 100%)',
+      card: 'linear-gradient(180deg, rgba(139, 92, 246, 0.15) 0%, rgba(6, 182, 212, 0.1) 50%, transparent 100%)',
+      button: 'linear-gradient(135deg, #8B5CF6 0%, #06B6D4 50%, #10B981 100%)',
     },
   },
 };
@@ -171,8 +291,17 @@ export function applyTheme(themeName: string) {
   root.style.setProperty('--gradient-card', theme.gradients.card);
   root.style.setProperty('--gradient-button', theme.gradients.button);
 
+  // Appliquer le background et foreground au body
+  document.body.style.backgroundColor = theme.colors.background;
+  document.body.style.color = theme.colors.foreground;
+
   // Sauvegarder dans localStorage
   localStorage.setItem('reelvibe-theme', themeName);
+  
+  // Émettre un événement personnalisé pour notifier les composants
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('theme-changed', { detail: { theme: themeName } }));
+  }
 }
 
 export function getStoredTheme(): string {

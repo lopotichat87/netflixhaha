@@ -251,22 +251,32 @@ export default function SocialPage() {
       const { data: allProfiles, error: profilesError } = await supabase
         .from('profiles')
         .select('id, user_id, username, avatar_url, bio')
-        .neq('user_id', user.id);
+        .neq('user_id', user.id)
+        .limit(100); // Charger jusqu'à 100 utilisateurs
 
       if (profilesError) {
         console.error('Erreur SQL suggestedUsers:', profilesError);
         return;
       }
 
+      console.log('📊 Profils trouvés dans la DB:', allProfiles?.length || 0);
+
       // Filtrer pour exclure ceux qu'on suit déjà
       let availableProfiles = allProfiles?.filter(p => 
         !followingIds.includes(p.user_id)
       ) || [];
 
-      // Si tous les utilisateurs ont été suivis, réinitialiser (montrer tous les users)
+      // Si tous les utilisateurs ont été suivis, montrer quand même tous les users
       if (availableProfiles.length === 0 && allProfiles && allProfiles.length > 0) {
-        console.log('🔄 Tous les utilisateurs ont été suivis, réinitialisation...');
+        console.log('🔄 Tous les utilisateurs ont été suivis, affichage de tous...');
         availableProfiles = allProfiles;
+      }
+
+      // Si vraiment aucun utilisateur n'existe, ne rien faire (le composant affichera le message)
+      if (availableProfiles.length === 0) {
+        console.log('⚠️ Aucun autre utilisateur trouvé dans la base de données');
+        setSuggestedUsers([]);
+        return;
       }
 
       // Randomiser l'ordre
@@ -279,12 +289,13 @@ export default function SocialPage() {
       
       setSuggestedUsers(suggestedProfiles.map(p => ({
         id: p.user_id,
-        username: p.username,
+        username: p.username || 'Utilisateur',
         avatar_url: p.avatar_url,
-        bio: p.bio,
+        bio: p.bio || 'Cinéphile passionné',
       })));
     } catch (error) {
       console.error('Erreur chargement utilisateurs:', error);
+      setSuggestedUsers([]);
     }
   };
 
@@ -443,7 +454,7 @@ export default function SocialPage() {
   if (loading || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#141414]">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-purple-500"></div>
+        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2" style={{ borderColor: 'var(--color-primary)' }}></div>
       </div>
     );
   }
@@ -460,7 +471,7 @@ export default function SocialPage() {
             animate={{ opacity: 1, y: 0 }}
             className="mb-8"
           >
-            <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+            <h1 className="text-4xl font-bold mb-2 bg-clip-text text-transparent" style={{ backgroundImage: 'var(--gradient-hero)' }}>
               Activité Sociale
             </h1>
             <p className="text-gray-400">Découvrez ce que votre communauté regarde et aime</p>
@@ -486,7 +497,8 @@ export default function SocialPage() {
                 {activeTab === tab.key && (
                   <motion.div
                     layoutId="activeTab"
-                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-purple-500 to-pink-500"
+                    className="absolute bottom-0 left-0 right-0 h-0.5"
+                    style={{ background: 'var(--gradient-button)' }}
                   />
                 )}
               </button>
@@ -505,7 +517,7 @@ export default function SocialPage() {
                       : `Toutes les activités`
                     }
                   </h2>
-                  <span className="px-3 py-1 bg-purple-600/20 text-purple-400 rounded-full text-sm font-medium">
+                  <span className="px-3 py-1 rounded-full text-sm font-medium" style={{ backgroundColor: 'rgba(var(--color-primary-rgb, 168, 85, 247), 0.2)', color: 'var(--color-primary)' }}>
                     {activities.length} {activities.length === 1 ? 'activité' : 'activités'}
                   </span>
                 </div>
@@ -513,7 +525,7 @@ export default function SocialPage() {
               
               {loadingData ? (
                 <div className="text-center py-12">
-                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500 mx-auto"></div>
+                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 mx-auto" style={{ borderColor: 'var(--color-primary)' }}></div>
                 </div>
               ) : activities.length === 0 ? (
                 <div className="text-center py-12 bg-white/5 rounded-xl">
@@ -607,12 +619,15 @@ export default function SocialPage() {
               <div className="bg-white/5 rounded-xl p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-xl font-bold flex items-center gap-2">
-                    <Users size={24} className="text-purple-400" />
+                    <Users size={24} className="text-[var(--color-primary)]" />
                     À suivre
                   </h3>
                   <button
                     onClick={() => loadSuggestedUsers()}
-                    className="text-xs text-purple-400 hover:text-purple-300 transition"
+                    className="text-xs transition"
+                    style={{ color: 'var(--color-primary)' }}
+                    onMouseEnter={(e) => e.currentTarget.style.opacity = '0.8'}
+                    onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                     title="Actualiser les suggestions"
                   >
                     ↻ Actualiser
@@ -638,11 +653,12 @@ export default function SocialPage() {
                       <button
                         onClick={() => handleFollow(suggestedUser.id)}
                         disabled={followingInProgress.has(suggestedUser.id)}
-                        className={`px-4 py-1.5 rounded-full text-sm font-medium transition ${
+                        className={`px-4 py-1.5 rounded-full text-sm font-medium transition text-white ${
                           followingUsers.has(suggestedUser.id)
-                            ? 'bg-gray-700 hover:bg-gray-600 text-white'
-                            : 'bg-purple-600 hover:bg-purple-700 text-white'
+                            ? 'bg-gray-700 hover:bg-gray-600'
+                            : ''
                         } ${followingInProgress.has(suggestedUser.id) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        style={!followingUsers.has(suggestedUser.id) ? { background: 'var(--gradient-button)' } : {}}
                       >
                         {followingInProgress.has(suggestedUser.id) 
                           ? '...' 
@@ -656,32 +672,35 @@ export default function SocialPage() {
                 </div>
                 ) : (
                   <div className="text-center py-8 text-gray-400 text-sm">
-                    <p>Aucune suggestion pour le moment</p>
+                    <Users size={48} className="mx-auto mb-4 text-gray-600" />
+                    <p className="mb-2 font-medium">Aucun utilisateur à suggérer</p>
+                    <p className="text-xs mb-4">Invitez vos amis à rejoindre ReelVibe !</p>
                     <button
                       onClick={() => loadSuggestedUsers()}
-                      className="mt-2 text-purple-400 hover:text-purple-300"
+                      className="px-4 py-2 rounded-lg text-sm font-medium transition text-white"
+                      style={{ background: 'var(--gradient-button)' }}
                     >
-                      Réessayer
+                      Actualiser
                     </button>
                   </div>
                 )}
               </div>
 
               {/* Stats */}
-              <div className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 rounded-xl p-6 border border-purple-500/20">
+              <div className="rounded-xl p-6" style={{ background: 'linear-gradient(to bottom right, rgba(var(--color-primary-rgb, 168, 85, 247), 0.2), rgba(var(--color-accent-rgb, 236, 72, 153), 0.2))', border: '1px solid rgba(var(--color-primary-rgb, 168, 85, 247), 0.2)' }}>
                 <h3 className="text-xl font-bold mb-4">Votre Impact</h3>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-gray-400">Followers</span>
-                    <span className="text-2xl font-bold text-purple-400">{userStats.followers}</span>
+                    <span className="text-2xl font-bold" style={{ color: 'var(--color-primary)' }}>{userStats.followers}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-400">Critiques</span>
-                    <span className="text-2xl font-bold text-pink-400">{userStats.reviews}</span>
+                    <span className="text-2xl font-bold" style={{ color: 'var(--color-accent)' }}>{userStats.reviews}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-400">Notes</span>
-                    <span className="text-2xl font-bold text-cyan-400">{userStats.ratings}</span>
+                    <span className="text-2xl font-bold" style={{ color: 'var(--color-secondary)' }}>{userStats.ratings}</span>
                   </div>
                 </div>
               </div>

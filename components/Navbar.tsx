@@ -82,40 +82,40 @@ export default function Navbar() {
         {/* Logo and Navigation */}
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500 bg-clip-text text-transparent transition-all duration-300 group-hover:scale-105">
+            <div className="text-3xl md:text-4xl font-bold transition-all duration-300 group-hover:scale-105" style={{ color: 'var(--color-primary)' }}>
               ReelVibe
             </div>
-            <div className="hidden md:block w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
+            <div className="hidden md:block w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: 'var(--color-primary)' }}></div>
           </Link>
           
           <ul className="hidden md:flex items-center gap-6 text-sm">
             <li>
-              <Link href="/home" className="hover:text-purple-400 transition font-medium">
+              <Link href="/home" className="transition font-medium hover:text-[var(--color-primary)]">
                 Accueil
               </Link>
             </li>
             <li>
-              <Link href="/movies" className="hover:text-purple-400 transition font-medium">
+              <Link href="/movies" className="transition font-medium hover:text-[var(--color-primary)]">
                 Films
               </Link>
             </li>
             <li>
-              <Link href="/browse/series" className="hover:text-purple-400 transition font-medium">
+              <Link href="/browse/series" className="transition font-medium hover:text-[var(--color-primary)]">
                 Séries
               </Link>
             </li>
             <li>
-              <Link href="/sagas" className="hover:text-purple-400 transition font-medium">
+              <Link href="/sagas" className="transition font-medium hover:text-[var(--color-primary)]">
                 Collections
               </Link>
             </li>
             <li>
-              <Link href="/nouveautes" className="hover:text-purple-400 transition font-medium">
+              <Link href="/nouveautes" className="transition font-medium hover:text-[var(--color-primary)]">
                 Nouveautés
               </Link>
             </li>
             <li>
-              <Link href="/trending" className="hover:text-purple-400 transition font-medium">
+              <Link href="/trending" className="transition font-medium hover:text-[var(--color-primary)]">
                 Tendances
               </Link>
             </li>
@@ -172,7 +172,18 @@ export default function Navbar() {
                             open: { opacity: 1, x: 0 }
                           }}
                         >
-                          <Link href={item.href} className="block px-4 py-2 hover:bg-purple-500/10 hover:text-purple-400 transition">
+                          <Link 
+                            href={item.href} 
+                            className="block px-4 py-2 transition rounded"
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = 'rgba(var(--color-primary-rgb, 168, 85, 247), 0.1)';
+                              e.currentTarget.style.color = 'var(--color-primary)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = '';
+                              e.currentTarget.style.color = '';
+                            }}
+                          >
                             {item.label}
                           </Link>
                         </motion.div>
@@ -190,7 +201,7 @@ export default function Navbar() {
               onMouseEnter={() => setOpenDropdown('communaute')}
               onMouseLeave={() => setOpenDropdown(null)}
             >
-              <button className="hover:text-purple-400 transition flex items-center gap-1 font-medium">
+              <button className="transition flex items-center gap-1 font-medium hover:text-[var(--color-primary)]">
                 Communauté
                 <motion.svg 
                   className="w-4 h-4" 
@@ -233,7 +244,18 @@ export default function Navbar() {
                             open: { opacity: 1, x: 0 }
                           }}
                         >
-                          <Link href={item.href} className="block px-4 py-2 hover:bg-purple-500/10 hover:text-purple-400 transition">
+                          <Link 
+                            href={item.href} 
+                            className="block px-4 py-2 transition rounded"
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = 'rgba(var(--color-primary-rgb, 168, 85, 247), 0.1)';
+                              e.currentTarget.style.color = 'var(--color-primary)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = '';
+                              e.currentTarget.style.color = '';
+                            }}
+                          >
                             {item.label}
                           </Link>
                         </motion.div>

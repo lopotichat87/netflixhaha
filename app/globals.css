@@ -57,6 +57,43 @@ body {
   background: var(--gradient-hero) !important;
 }
 
+/* Bouton outline avec hover qui change la couleur du texte */
+.btn-outline-theme {
+  border: 2px solid var(--color-primary);
+  color: var(--color-primary);
+  transition: all 0.2s ease;
+}
+
+.btn-outline-theme:hover {
+  background-color: var(--color-primary);
+  color: white !important;
+}
+
+/* Links et dropdowns avec les couleurs du thème */
+.link-theme-hover:hover {
+  color: var(--color-primary) !important;
+}
+
+.dropdown-item-theme {
+  transition: all 0.2s ease;
+}
+
+.dropdown-item-theme:hover {
+  background-color: rgba(var(--color-primary-rgb), 0.1);
+  color: var(--color-primary) !important;
+}
+
+/* Boutons avec gradient du thème */
+.btn-gradient-theme {
+  background: var(--gradient-button);
+  transition: all 0.2s ease;
+}
+
+.btn-gradient-theme:hover {
+  opacity: 0.9;
+  transform: scale(1.02);
+}
+
 /* Appliquer le thème aux boutons gradients existants */
 button[class*="purple-600"],
 a[class*="purple-600"],

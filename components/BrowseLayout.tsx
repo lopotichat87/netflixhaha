@@ -22,6 +22,9 @@ export default function BrowseLayout({
   iconBg = 'from-purple-500 to-pink-500',
   children,
 }: BrowseLayoutProps) {
+  // Si iconBg contient "gradient-theme", utiliser le CSS custom property
+  const isThemeGradient = iconBg.includes('gradient-theme');
+  
   return (
     <div className="min-h-screen bg-[#141414]">
       <Navbar />
@@ -35,9 +38,18 @@ export default function BrowseLayout({
           className="mb-12"
         >
           <div className="flex items-center gap-4 mb-4">
-            <div className={`w-14 h-14 bg-gradient-to-br ${iconBg} rounded-xl flex items-center justify-center shadow-lg`}>
-              <Icon size={28} className={iconColor} />
-            </div>
+            {isThemeGradient ? (
+              <div 
+                className="w-14 h-14 rounded-xl flex items-center justify-center shadow-lg"
+                style={{ background: 'var(--gradient-button)' }}
+              >
+                <Icon size={28} className={iconColor} />
+              </div>
+            ) : (
+              <div className={`w-14 h-14 bg-gradient-to-br ${iconBg} rounded-xl flex items-center justify-center shadow-lg`}>
+                <Icon size={28} className={iconColor} />
+              </div>
+            )}
             <div>
               <h1 className="text-4xl md:text-5xl font-bold">{title}</h1>
               <p className="text-gray-400 text-sm md:text-base mt-1">{description}</p>

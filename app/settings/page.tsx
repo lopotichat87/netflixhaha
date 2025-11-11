@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import ThemeSelector from '@/components/ThemeSelector';
+import ThemePreview from '@/components/ThemePreview';
 import ImageUpload from '@/components/ImageUpload';
 import Avatar from '@/components/Avatar';
 import { useAuth } from '@/contexts/AuthContext';
@@ -103,7 +104,7 @@ export default function SettingsPage() {
   if (!user || !profile) {
     return (
       <div className="min-h-screen bg-[#141414] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-purple-500"></div>
+        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2" style={{ borderColor: 'var(--color-primary)' }}></div>
       </div>
     );
   }
@@ -123,13 +124,13 @@ export default function SettingsPage() {
             onClick={() => router.back()}
             className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-4 group"
           >
-            <div className="p-2 rounded-lg bg-white/5 group-hover:bg-purple-500/20 transition-colors">
+            <div className="p-2 rounded-lg bg-white/5 transition-colors" style={{ ['--hover-bg' as any]: 'rgba(var(--color-primary), 0.2)' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-primary)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)'} >
               <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
             </div>
             <span className="font-medium">Retour</span>
           </button>
 
-          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent mb-2">
+          <h1 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent mb-2" style={{ backgroundImage: 'linear-gradient(to right, white, var(--color-primary), var(--color-accent))' }}>
             Paramètres
           </h1>
           <p className="text-gray-400 text-sm">Gérez vos préférences et informations de profil</p>
@@ -145,9 +146,13 @@ export default function SettingsPage() {
                   onClick={() => setActiveTab(tab.id as any)}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
                     activeTab === tab.id
-                      ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/30'
+                      ? 'text-white shadow-lg'
                       : 'bg-transparent hover:bg-white/10 text-gray-300 hover:text-white'
                   }`}
+                  style={activeTab === tab.id ? {
+                    background: 'var(--gradient-button)',
+                    boxShadow: '0 10px 15px -3px rgba(var(--color-primary-rgb, 168, 85, 247), 0.3)'
+                  } : {}}
                 >
                   <tab.icon size={20} />
                   <span className="font-medium">{tab.label}</span>
@@ -166,17 +171,18 @@ export default function SettingsPage() {
                 className="space-y-6"
               >
                 <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-                  <User className="text-purple-400" size={28} />
+                  <User className="text-[var(--color-primary)]" size={28} />
                   Informations du profil
                 </h2>
 
                 {/* Preview Avatar */}
                 <div className="flex items-center gap-4 p-4 bg-white/5 rounded-lg">
-                  <Avatar
-                    avatarUrl={avatarUrl}
-                    size="xl"
-                    className="border-2 border-purple-500/30"
-                  />
+                  <div className="border-2 rounded-full" style={{ borderColor: 'var(--color-primary)', opacity: 0.3 }}>
+                    <Avatar
+                      avatarUrl={avatarUrl}
+                      size="xl"
+                    />
+                  </div>
                   <div>
                     <h3 className="font-bold text-lg">{username || 'Votre nom'}</h3>
                     <p className="text-sm text-gray-400">{bio || 'Aucune bio'}</p>
@@ -204,7 +210,7 @@ export default function SettingsPage() {
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    className="w-full px-4 py-3 bg-black/50 border border-white/10 rounded-lg focus:outline-none focus:border-purple-500 transition"
+                    className="w-full px-4 py-3 bg-black/50 border border-white/10 rounded-lg focus:outline-none transition focus:border-[var(--color-primary)]"
                     placeholder="JohnDoe"
                     maxLength={20}
                   />
@@ -219,7 +225,7 @@ export default function SettingsPage() {
                     value={bio}
                     onChange={(e) => setBio(e.target.value)}
                     rows={3}
-                    className="w-full px-4 py-3 bg-black/50 border border-white/10 rounded-lg focus:outline-none focus:border-purple-500 transition resize-none"
+                    className="w-full px-4 py-3 bg-black/50 border border-white/10 rounded-lg focus:outline-none transition resize-none focus:border-[var(--color-primary)]"
                     placeholder="Parlez-nous de vous..."
                     maxLength={200}
                   />
@@ -244,11 +250,11 @@ export default function SettingsPage() {
                 </div>
 
                 {/* Toggle Profil Privé */}
-                <div className="p-6 bg-gradient-to-br from-purple-900/20 to-pink-900/20 border border-purple-500/30 rounded-xl">
+                <div className="p-6 rounded-xl" style={{ background: 'linear-gradient(to bottom right, rgba(var(--color-primary-rgb, 168, 85, 247), 0.2), rgba(var(--color-accent-rgb, 236, 72, 153), 0.2))', border: '1px solid rgba(var(--color-primary-rgb, 168, 85, 247), 0.3)' }}>
                   <label className="flex items-center justify-between cursor-pointer">
                     <div>
                       <div className="font-bold text-lg mb-2 flex items-center gap-2">
-                        <Lock size={20} className="text-purple-400" />
+                        <Lock size={20} className="text-[var(--color-primary)]" />
                         Profil privé
                       </div>
                       <div className="text-sm text-gray-400">
@@ -260,7 +266,9 @@ export default function SettingsPage() {
                         type="checkbox"
                         checked={isPrivate}
                         onChange={(e) => setIsPrivate(e.target.checked)}
-                        className="w-12 h-6 appearance-none bg-gray-700 rounded-full relative cursor-pointer transition-colors checked:bg-purple-600 before:content-[''] before:absolute before:w-5 before:h-5 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 before:transition-transform checked:before:translate-x-6"
+                        className="w-12 h-6 appearance-none bg-gray-700 rounded-full relative cursor-pointer transition-colors before:content-[''] before:absolute before:w-5 before:h-5 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 before:transition-transform checked:before:translate-x-6"
+                        style={{ ['&:checked' as any]: { backgroundColor: 'var(--color-primary)' } }}
+                        onChangeCapture={(e: any) => e.target.checked && (e.target.style.backgroundColor = 'var(--color-primary)')}
                       />
                     </div>
                   </label>
@@ -306,7 +314,8 @@ export default function SettingsPage() {
                 <button
                   onClick={handleSave}
                   disabled={loading}
-                  className="flex items-center gap-2 px-6 py-3 bg-purple-600 rounded-lg hover:bg-purple-700 transition disabled:opacity-50"
+                  className="flex items-center gap-2 px-6 py-3 rounded-lg transition disabled:opacity-50 text-white"
+                  style={{ background: 'var(--gradient-button)' }}
                 >
                   <Save size={20} />
                   {loading ? 'Enregistrement...' : saved ? 'Enregistré' : 'Enregistrer'}
@@ -321,10 +330,13 @@ export default function SettingsPage() {
                 transition={{ duration: 0.3 }}
                 className="space-y-6"
               >
+                {/* Preview du thème actuel */}
+                <ThemePreview />
+                
                 <ThemeSelector />
                 
                 {/* Informations supplémentaires */}
-                <div className="mt-8 p-6 bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-xl">
+                <div className="mt-8 p-6 rounded-xl" style={{ background: 'linear-gradient(to bottom right, rgba(var(--color-primary-rgb, 168, 85, 247), 0.1), rgba(var(--color-accent-rgb, 236, 72, 153), 0.1))', border: '1px solid rgba(var(--color-primary-rgb, 168, 85, 247), 0.2)' }}>
                   <h3 className="text-lg font-bold mb-3 flex items-center gap-2">
                     <span>✨</span>
                     Personnalisation avancée
@@ -334,28 +346,28 @@ export default function SettingsPage() {
                   </p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                     <div className="flex items-start gap-3">
-                      <div className="w-2 h-2 bg-purple-400 rounded-full mt-1.5"></div>
+                      <div className="w-2 h-2 rounded-full mt-1.5" style={{ backgroundColor: 'var(--color-primary)' }}></div>
                       <div>
                         <p className="font-semibold text-white">Synchronisation automatique</p>
                         <p className="text-gray-400">Vos préférences sont sauvegardées instantanément</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
-                      <div className="w-2 h-2 bg-pink-400 rounded-full mt-1.5"></div>
+                      <div className="w-2 h-2 rounded-full mt-1.5" style={{ backgroundColor: 'var(--color-accent)' }}></div>
                       <div>
                         <p className="font-semibold text-white">Preview en temps réel</p>
                         <p className="text-gray-400">Voyez les changements immédiatement</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
-                      <div className="w-2 h-2 bg-cyan-400 rounded-full mt-1.5"></div>
+                      <div className="w-2 h-2 rounded-full mt-1.5" style={{ backgroundColor: 'var(--color-secondary)' }}></div>
                       <div>
-                        <p className="font-semibold text-white">5 thèmes uniques</p>
+                        <p className="font-semibold text-white">12 thèmes uniques</p>
                         <p className="text-gray-400">Chaque thème avec sa propre ambiance</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
-                      <div className="w-2 h-2 bg-green-400 rounded-full mt-1.5"></div>
+                      <div className="w-2 h-2 rounded-full mt-1.5" style={{ backgroundColor: 'var(--color-accent)' }}></div>
                       <div>
                         <p className="font-semibold text-white">Optimisé pour la lecture</p>
                         <p className="text-gray-400">Contrastes et couleurs étudiés</p>
@@ -374,7 +386,7 @@ export default function SettingsPage() {
                 className="space-y-6"
               >
                 <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-                  <Bell className="text-purple-400" size={28} />
+                  <Bell className="text-[var(--color-primary)]" size={28} />
                   Notifications
                 </h2>
 
@@ -409,7 +421,8 @@ export default function SettingsPage() {
                 <button
                   onClick={handleSave}
                   disabled={loading}
-                  className="flex items-center gap-2 px-6 py-3 bg-purple-600 rounded-lg hover:bg-purple-700 transition disabled:opacity-50"
+                  className="flex items-center gap-2 px-6 py-3 rounded-lg transition disabled:opacity-50 text-white"
+                  style={{ background: 'var(--gradient-button)' }}
                 >
                   <Save size={20} />
                   {loading ? 'Enregistrement...' : saved ? 'Enregistré' : 'Enregistrer'}
@@ -425,7 +438,7 @@ export default function SettingsPage() {
                 className="space-y-6"
               >
                 <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-                  <Lock className="text-purple-400" size={28} />
+                  <Lock className="text-[var(--color-primary)]" size={28} />
                   Compte
                 </h2>
 

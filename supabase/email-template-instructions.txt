@@ -1,0 +1,130 @@
+========================================
+CONFIGURATION DU TEMPLATE D'EMAIL
+========================================
+
+ÉTAPE 1: Accéder aux Email Templates
+--------------------------------------
+1. Allez sur https://supabase.com/dashboard
+2. Sélectionnez votre projet
+3. Allez dans "Authentication" → "Email Templates"
+4. Sélectionnez "Confirm signup"
+
+
+ÉTAPE 2: Configurer l'URL de redirection
+-----------------------------------------
+Dans "Site URL" (Authentication → URL Configuration):
+- Site URL: https://votre-domaine.com
+- Redirect URLs: https://votre-domaine.com/auth/login
+
+
+ÉTAPE 3: Copier le template HTML ci-dessous
+--------------------------------------------
+
+Subject: Confirmez votre inscription à ReelVibe
+
+Body (HTML):
+
+<!DOCTYPE html>
+<html lang="fr" style="font-family: Arial, sans-serif;">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Confirmation d'inscription</title>
+  </head>
+  <body style="margin: 0; background-color: #f3f4f6; padding: 40px;">
+    <table align="center" width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+      <tr>
+        <td style="text-align: center; background: linear-gradient(135deg, #A855F7, #EC4899); padding: 30px; border-radius: 8px 8px 0 0;">
+          <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold;">🎬 ReelVibe</h1>
+          <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 16px;">Bienvenue dans la communauté !</p>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding: 40px; color: #111827;">
+          <h2 style="color: #1e293b; margin: 0 0 20px 0; font-size: 24px;">Confirmez votre inscription</h2>
+          <p style="font-size: 16px; line-height: 1.6; margin: 0 0 20px 0; color: #4b5563;">
+            Merci de rejoindre ReelVibe, votre nouveau réseau social pour cinéphiles ! 🍿
+          </p>
+          <p style="font-size: 16px; line-height: 1.6; margin: 0 0 30px 0; color: #4b5563;">
+            Pour finaliser la création de votre compte et commencer à découvrir, noter et partager vos films préférés, veuillez confirmer votre adresse e‑mail :
+          </p>
+          <p style="text-align: center; margin: 30px 0;">
+            <a href="{{ .ConfirmationURL }}" 
+              style="background: linear-gradient(135deg, #A855F7, #EC4899); color: white; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-weight: bold; display: inline-block; font-size: 16px; box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3);">
+              ✨ Confirmer mon adresse e‑mail
+            </a>
+          </p>
+          <p style="font-size: 14px; color: #9ca3af; margin: 30px 0 0 0; padding: 20px; background: #f9fafb; border-radius: 6px; border-left: 4px solid #A855F7;">
+            <strong>Note :</strong> Ce lien expire dans 24 heures. Si vous n'avez pas créé de compte, ignorez simplement cet e‑mail.
+          </p>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding: 30px 40px; background: #f9fafb; border-top: 1px solid #e5e7eb;">
+          <p style="font-size: 14px; color: #6b7280; margin: 0 0 15px 0; text-align: center;">
+            Une fois connecté, vous pourrez :
+          </p>
+          <ul style="list-style: none; padding: 0; margin: 0;">
+            <li style="font-size: 14px; color: #6b7280; padding: 8px 0;">🎯 Noter et critiquer vos films favoris</li>
+            <li style="font-size: 14px; color: #6b7280; padding: 8px 0;">📋 Créer des listes personnalisées</li>
+            <li style="font-size: 14px; color: #6b7280; padding: 8px 0;">👥 Suivre d'autres cinéphiles</li>
+            <li style="font-size: 14px; color: #6b7280; padding: 8px 0;">📊 Voir vos statistiques détaillées</li>
+          </ul>
+        </td>
+      </tr>
+      <tr>
+        <td style="text-align: center; background-color: #0f172a; padding: 25px; border-radius: 0 0 8px 8px;">
+          <p style="font-size: 12px; color: rgba(255,255,255,0.6); margin: 0;">
+            © 2025 ReelVibe. Tous droits réservés.
+          </p>
+          <p style="font-size: 12px; color: rgba(255,255,255,0.4); margin: 10px 0 0 0;">
+            Votre réseau social cinéma
+          </p>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
+
+
+ÉTAPE 4: Configuration des paramètres d'authentification
+---------------------------------------------------------
+Dans Authentication → Settings:
+
+✅ Enable email confirmations: ON
+✅ Secure email change: ON
+✅ Double confirm email changes: ON
+
+Redirect URLs (Authentication → URL Configuration):
+Ajoutez: https://votre-domaine.com/auth/login?confirmed=true
+
+
+ÉTAPE 5: Variables disponibles dans le template
+------------------------------------------------
+{{ .ConfirmationURL }} - Lien de confirmation (OBLIGATOIRE)
+{{ .Token }} - Token de confirmation
+{{ .TokenHash }} - Hash du token
+{{ .SiteURL }} - URL de votre site
+
+
+ÉTAPE 6: Tester l'inscription
+------------------------------
+1. Créez un nouveau compte sur votre app
+2. Vérifiez votre boîte mail
+3. Cliquez sur le bouton de confirmation
+4. Vous devriez être redirigé vers /auth/login?confirmed=true
+5. Message de succès: "Votre email a été confirmé avec succès !"
+6. Connectez-vous avec vos identifiants
+7. Le profil sera créé automatiquement via le trigger
+
+
+RÉSUMÉ DU FLUX
+--------------
+1. Utilisateur s'inscrit → Reçoit un email
+2. Clique sur "Confirmer mon adresse e-mail" 
+3. Redirigé vers /auth/login?confirmed=true
+4. Message de succès affiché
+5. Se connecte avec email + mot de passe
+6. Trigger Supabase crée automatiquement le profil
+7. Redirigé vers /home avec profil créé
+
+✅ TOUT EST CONFIGURÉ !

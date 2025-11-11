@@ -78,78 +78,9 @@ export default function SignupPage() {
       const result = await authHelpers.signUp(email, password, username);
       
       if (result.user) {
-        // Mettre à jour le profil avec avatar (par défaut : premier emoji)
-        const { supabase } = await import('@/lib/supabase');
-        
-        // Attendre que le profil soit créé (max 5 secondes)
-        let profileExists = false;
-        let createdProfile = null;
-        for (let i = 0; i < 10; i++) {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('user_id, username')
-            .eq('user_id', result.user.id)
-            .single();
-          
-          if (profile) {
-            profileExists = true;
-            createdProfile = profile;
-            console.log('✅ Profil créé avec username:', profile.username);
-            break;
-          }
-          await new Promise(resolve => setTimeout(resolve, 500));
-        }
-        
-        if (!profileExists) {
-          throw new Error('Le profil n\'a pas pu être créé. Veuillez contacter le support.');
-        }
-        
-        // Par défaut, utiliser l'emoji sélectionné (ou le premier si aucun)
-        let avatarUrl = `${selectedAvatar.emoji}|${selectedAvatar.color}`;
-        
-        // Si une image est uploadée, l'uploader vers Supabase Storage
-        if (useUploadedImage && uploadedImage) {
-          try {
-            // Convertir data URL en blob
-            const response = await fetch(uploadedImage);
-            const blob = await response.blob();
-            const fileName = `avatar_${result.user.id}_${Date.now()}.jpg`;
-            
-            const { data: uploadData, error: uploadError } = await supabase.storage
-              .from('profiles')
-              .upload(fileName, blob, {
-                contentType: 'image/jpeg',
-                upsert: true
-              });
-            
-            if (!uploadError && uploadData) {
-              const { data: { publicUrl } } = supabase.storage
-                .from('profiles')
-                .getPublicUrl(fileName);
-              avatarUrl = publicUrl;
-            }
-          } catch (err) {
-            console.error('Error uploading image:', err);
-          }
-        }
-        
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update({
-            avatar_url: avatarUrl,
-          })
-          .eq('user_id', result.user.id);
-        
-        if (updateError) {
-          console.error('Error updating avatar:', updateError);
-        }
-        
-        // Attendre un peu pour que l'auth context se mette à jour
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Rediriger vers home (le profil sera chargé automatiquement)
-        console.log('🎉 Inscription réussie! Redirection vers home');
-        router.push('/home');
+        // Inscription réussie, rediriger vers login
+        console.log('🎉 Inscription réussie! Redirection vers login');
+        router.push('/auth/login?signup=success&message=Inscription réussie ! Vous pouvez maintenant vous connecter.');
       }
     } catch (err: any) {
       setError(err.message || 'Erreur lors de l\'inscription');

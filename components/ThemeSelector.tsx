@@ -67,7 +67,7 @@ export default function ThemeSelector() {
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {Object.values(availableThemes).map((theme) => (
           <motion.button
             key={theme.name}
@@ -159,6 +159,12 @@ function getThemeDescription(themeName: string): string {
     sunset: 'Crépuscule Tropical - Ambre, Rouge & Rose',
     emerald: 'Forêt Émeraude - Vert nature & ressourçant',
     royal: 'Majesté Royale - Violet impérial & luxueux',
+    midnight: 'Minuit Électrique - Bleu profond & lumineux',
+    crimson: 'Rouge Intense - Passion & énergie pure',
+    neon: 'Néons Futuristes - Cyan, Violet & Rose vibrants',
+    forest: 'Forêt Enchantée - Vert vivifiant & naturel',
+    gold: 'Or Prestigieux - Chaleur dorée & raffinement',
+    aurora: 'Aurore Boréale - Spectacle multicolore magique',
   };
   return descriptions[themeName] || '';
 }

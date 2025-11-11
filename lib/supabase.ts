@@ -84,49 +84,15 @@ export const authHelpers = {
         data: {
           username: cleanedUsername,
         },
-        emailRedirectTo: undefined,
+        // URL de redirection après confirmation d'email
+        emailRedirectTo: `${window.location.origin}/auth/login?confirmed=true`,
       },
     });
     
     if (error) throw error;
     
-    // Créer le profil immédiatement
-    if (data.user) {
-      // Attendre un peu pour éviter les race conditions
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Vérifier si le profil existe déjà (créé par trigger)
-      const { data: existingProfile } = await supabase
-        .from('profiles')
-        .select('user_id')
-        .eq('user_id', data.user.id)
-        .single();
-      
-      // Si le profil n'existe pas, le créer
-      if (!existingProfile) {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert([
-            {
-              user_id: data.user.id,
-              username: cleanedUsername,
-              display_name: cleanedUsername,
-              avatar_url: '🎬|bg-red-600',
-              bio: null,
-              banner_url: null,
-              is_private: false,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-            },
-          ]);
-        
-        if (profileError) {
-          console.error('Profile creation error:', profileError);
-          throw new Error('Impossible de créer le profil. Veuillez réessayer.');
-        }
-      }
-    }
-    
+    // Le profil sera créé automatiquement par le trigger Supabase après confirmation
+    // On retourne juste les données de l'utilisateur
     return data;
   },
 

@@ -106,7 +106,7 @@ function MoviesContent() {
       title="Films"
       description="Explorez notre catalogue de films"
       icon={Film}
-      iconBg="from-blue-500 to-cyan-500"
+      iconBg="gradient-theme-hero"
     >
       <div>
         {/* Search Bar */}
@@ -117,7 +117,7 @@ function MoviesContent() {
             value={searchQuery}
             onChange={(e) => handleSearch(e.target.value)}
             placeholder="Rechercher un film..."
-            className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:bg-white/[0.07] focus:border-blue-500 transition placeholder:text-gray-600"
+            className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:bg-white/[0.07] transition placeholder:text-gray-600 focus:border-[var(--color-primary)]"
           />
         </div>
 
@@ -130,9 +130,10 @@ function MoviesContent() {
               onClick={() => changeCategory(cat.id)}
               className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
                 category === cat.id
-                  ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white scale-105 shadow-lg'
+                  ? 'text-white scale-105 shadow-lg'
                   : 'bg-white/5 text-gray-300 hover:bg-white/10'
               }`}
+              style={category === cat.id ? { background: 'var(--gradient-button)' } : {}}
             >
               {cat.label}
             </button>
@@ -150,7 +151,7 @@ function MoviesContent() {
         {/* Loading */}
         {loading ? (
           <div className="flex justify-center py-20">
-            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
+            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2" style={{ borderColor: 'var(--color-primary)' }}></div>
           </div>
         ) : (
           <>
@@ -198,7 +199,7 @@ function MoviesContent() {
                       {currentPage - 1}
                     </button>
                   )}
-                  <button className="px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-lg font-semibold">
+                  <button className="px-4 py-2 rounded-lg font-semibold text-white" style={{ background: 'var(--gradient-button)' }}>
                     {currentPage}
                   </button>
                   {currentPage < totalPages - 1 && (
@@ -246,7 +247,7 @@ export default function MoviesPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-[#141414] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
+        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2" style={{ borderColor: 'var(--color-primary)' }}></div>
       </div>
     }>
       <MoviesContent />

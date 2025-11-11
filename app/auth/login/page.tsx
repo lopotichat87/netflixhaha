@@ -19,7 +19,14 @@ function LoginForm() {
 
   useEffect(() => {
     const message = searchParams.get('message');
-    if (message === 'confirm-email') {
+    const signup = searchParams.get('signup');
+    const confirmed = searchParams.get('confirmed');
+    
+    if (confirmed === 'true') {
+      setSuccessMessage('Votre email a été confirmé avec succès ! Vous pouvez maintenant vous connecter.');
+    } else if (signup === 'success') {
+      setSuccessMessage(decodeURIComponent(message || 'Inscription réussie ! Veuillez vérifier votre adresse email pour confirmer votre compte.'));
+    } else if (message === 'confirm-email') {
       setSuccessMessage('Inscription réussie ! Veuillez vérifier votre boîte mail pour confirmer votre adresse email avant de vous connecter.');
     }
   }, [searchParams]);

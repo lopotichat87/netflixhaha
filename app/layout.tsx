@@ -26,13 +26,53 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Netflix Clone - Regardez des films et séries en streaming",
-  description: "Regardez des films et des séries Netflix en ligne ou en streaming",
+  title: {
+    default: "ReelVibe - Votre plateforme cinéma sociale et collaborative",
+    template: "%s | ReelVibe"
+  },
+  description: "Découvrez, notez et partagez vos films et séries préférés. ReelVibe est votre réseau social cinéphile avec recommandations personnalisées, listes collaboratives et statistiques détaillées.",
+  keywords: ["films", "séries", "streaming", "critiques", "notes", "cinéma", "réseau social", "recommandations", "TMDB", "réseaux sociaux films"],
+  authors: [{ name: "ReelVibe Team" }],
+  creator: "ReelVibe",
+  publisher: "ReelVibe",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Netflix Clone",
+    title: "ReelVibe",
+  },
+  openGraph: {
+    type: "website",
+    locale: "fr_FR",
+    url: "https://reelvibe.app",
+    siteName: "ReelVibe",
+    title: "ReelVibe - Votre plateforme cinéma sociale",
+    description: "Découvrez, notez et partagez vos films et séries préférés avec votre communauté cinéphile.",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "ReelVibe - Plateforme sociale pour cinéphiles",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ReelVibe - Votre plateforme cinéma sociale",
+    description: "Découvrez, notez et partagez vos films et séries préférés.",
+    images: ["/og-image.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
   },
 };
 
@@ -40,7 +80,7 @@ export const viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  themeColor: "#E50914",
+  themeColor: "#A855F7",
 };
 
 export default function RootLayout({

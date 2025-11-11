@@ -11,10 +11,10 @@ export default function ProgressBar() {
   useEffect(() => {
     NProgress.configure({ 
       showSpinner: false,
-      trickleSpeed: 100,
-      minimum: 0.08,
-      easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
-      speed: 300
+      trickleSpeed: 50, // Plus rapide
+      minimum: 0.1,
+      easing: 'ease',
+      speed: 200 // Navigation plus rapide
     });
   }, []);
 

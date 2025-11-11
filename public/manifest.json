@@ -1,11 +1,11 @@
 {
-  "name": "Netflix Clone - Streaming de Films et Séries",
-  "short_name": "Netflix Clone",
-  "description": "Regardez des films et des séries Netflix en ligne ou en streaming",
+  "name": "ReelVibe - Votre Réseau Social Cinéma",
+  "short_name": "ReelVibe",
+  "description": "Découvrez, notez et partagez vos films et séries préférés avec votre communauté cinéphile",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#141414",
-  "theme_color": "#E50914",
+  "theme_color": "#A855F7",
   "orientation": "portrait-primary",
   "icons": [
     {
