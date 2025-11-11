@@ -203,8 +203,8 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Custom Scrollbar avec points */}
-      <div className="fixed right-8 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-6">
+      {/* Custom Scrollbar avec points - Caché sur mobile */}
+      <div className="hidden lg:flex fixed right-4 xl:right-8 top-1/2 -translate-y-1/2 z-50 flex-col gap-4 xl:gap-6">
         {sections.map((section, index) => (
           <button
             key={section.id}
@@ -214,7 +214,7 @@ export default function LandingPage() {
           >
             {/* Point - Allumé si <= activeSection */}
             <div
-              className={`w-3 h-3 rounded-full transition-all duration-500 ${
+              className={`w-2.5 xl:w-3 h-2.5 xl:h-3 rounded-full transition-all duration-500 ${
                 index <= activeSection
                   ? 'bg-gradient-to-br from-yellow-400 to-yellow-600 shadow-lg shadow-yellow-500/50'
                   : 'bg-gray-700 hover:bg-gray-600'
@@ -226,18 +226,18 @@ export default function LandingPage() {
               <>
                 {/* Cercle principal */}
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-7 h-7 rounded-full border-2 border-yellow-400 animate-pulse" />
+                  <div className="w-6 xl:w-7 h-6 xl:h-7 rounded-full border-2 border-yellow-400 animate-pulse" />
                 </div>
                 {/* Cercle extérieur */}
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-9 h-9 rounded-full border border-yellow-500/30" />
+                  <div className="w-8 xl:w-9 h-8 xl:h-9 rounded-full border border-yellow-500/30" />
                 </div>
               </>
             )}
 
             {/* Label au hover */}
-            <div className="absolute right-full mr-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-              <div className="bg-gradient-to-r from-yellow-500/10 to-yellow-600/10 backdrop-blur-md text-white text-sm px-4 py-2 rounded-xl whitespace-nowrap border border-yellow-500/30 shadow-xl">
+            <div className="absolute right-full mr-3 xl:mr-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+              <div className="bg-gradient-to-r from-yellow-500/10 to-yellow-600/10 backdrop-blur-md text-white text-xs xl:text-sm px-3 xl:px-4 py-1.5 xl:py-2 rounded-xl whitespace-nowrap border border-yellow-500/30 shadow-xl">
                 {section.label}
               </div>
             </div>
@@ -246,41 +246,41 @@ export default function LandingPage() {
       </div>
 
       {/* Navigation Menu Flottant */}
-      <nav className="fixed top-0 left-0 right-0 z-50 px-6 pt-6">
-        <div className="max-w-7xl mx-auto bg-black/80 backdrop-blur-lg border border-white/10 rounded-2xl shadow-2xl">
-          <div className="px-6">
-            <div className="flex items-center justify-between h-16">
+      <nav className="fixed top-0 left-0 right-0 z-50 px-3 sm:px-4 md:px-6 pt-3 sm:pt-4 md:pt-6">
+        <div className="max-w-7xl mx-auto bg-black/80 backdrop-blur-lg border border-white/10 rounded-xl md:rounded-2xl shadow-2xl">
+          <div className="px-3 sm:px-4 md:px-6">
+            <div className="flex items-center justify-between h-14 sm:h-16">
               {/* Logo */}
-              <Link href="/landing" className="flex items-center gap-2">
-                <Film size={32} className="text-purple-500" />
-                <span className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+              <Link href="/landing" className="flex items-center gap-1.5 sm:gap-2">
+                <Film size={24} className="sm:w-8 sm:h-8 text-purple-500" />
+                <span className="text-lg sm:text-xl md:text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
                   ReelVibe
                 </span>
               </Link>
 
-              {/* Menu Links - Center */}
-              <div className="hidden md:flex items-center gap-8">
-                <Link href="/help" className="text-gray-300 hover:text-white transition-colors font-medium">
+              {/* Menu Links - Center - Hidden on small screens */}
+              <div className="hidden lg:flex items-center gap-6 xl:gap-8">
+                <Link href="/help" className="text-sm xl:text-base text-gray-300 hover:text-white transition-colors font-medium">
                   Aide
                 </Link>
-                <Link href="/terms" className="text-gray-300 hover:text-white transition-colors font-medium">
+                <Link href="/terms" className="text-sm xl:text-base text-gray-300 hover:text-white transition-colors font-medium">
                   Conditions
                 </Link>
-                <Link href="/privacy" className="text-gray-300 hover:text-white transition-colors font-medium">
+                <Link href="/privacy" className="text-sm xl:text-base text-gray-300 hover:text-white transition-colors font-medium">
                   Confidentialité
                 </Link>
               </div>
 
               {/* Action Buttons - Right */}
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
                 <Link href="/auth/login">
-                  <button className="hidden sm:block px-4 py-2 text-white hover:text-gray-300 transition-colors font-medium">
+                  <button className="px-3 sm:px-4 py-1.5 sm:py-2 text-sm sm:text-base text-white hover:text-gray-300 transition-colors font-medium">
                     Connexion
                   </button>
                 </Link>
                 <Link href="/auth/signup">
-                  <button className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-full font-semibold transition-all shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50">
-                    Créer un compte
+                  <button className="px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 text-sm sm:text-base bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-full font-semibold transition-all shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 whitespace-nowrap">
+                    S'inscrire
                   </button>
                 </Link>
               </div>
@@ -342,23 +342,23 @@ export default function LandingPage() {
         </div>
 
         {/* Content */}
-        <div className="relative z-10 text-center px-4 max-w-5xl mx-auto">
+        <div className="relative z-10 text-center px-4 sm:px-6 md:px-8 max-w-5xl mx-auto">
           {/* Logo */}
           <motion.div
             initial={{ opacity: 0, y: -50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="mb-8"
+            className="mb-6 sm:mb-8"
           >
-            <h1 className="text-7xl md:text-9xl font-bold bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500 bg-clip-text text-transparent mb-4">
+            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-bold bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500 bg-clip-text text-transparent mb-3 sm:mb-4">
               ReelVibe
             </h1>
-            <div className="flex items-center justify-center gap-2">
-              <div className="w-3 h-3 bg-purple-500 rounded-full animate-pulse" />
-              <p className="text-xl md:text-2xl text-gray-400">
+            <div className="flex items-center justify-center gap-1.5 sm:gap-2">
+              <div className="w-2 h-2 sm:w-3 sm:h-3 bg-purple-500 rounded-full animate-pulse" />
+              <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-400">
                 Ressentez chaque film
               </p>
-              <div className="w-3 h-3 bg-cyan-500 rounded-full animate-pulse" />
+              <div className="w-2 h-2 sm:w-3 sm:h-3 bg-cyan-500 rounded-full animate-pulse" />
             </div>
           </motion.div>
 
@@ -367,7 +367,7 @@ export default function LandingPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.8 }}
-            className="text-2xl md:text-3xl text-gray-300 mb-12 leading-relaxed"
+            className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-gray-300 mb-8 sm:mb-10 md:mb-12 leading-relaxed px-2"
           >
             Découvrez, notez et partagez vos films selon vos <span className="text-transparent bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text font-semibold">émotions</span>
           </motion.p>
@@ -377,16 +377,16 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6, duration: 0.8 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+            className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center"
           >
-            <Link href="/auth/signup">
-              <button className="group relative px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full font-semibold text-lg hover:scale-105 transition-all duration-300 shadow-lg shadow-purple-500/50 hover:shadow-purple-500/70">
+            <Link href="/auth/signup" className="w-full sm:w-auto">
+              <button className="group relative w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full font-semibold text-base sm:text-lg hover:scale-105 transition-all duration-300 shadow-lg shadow-purple-500/50 hover:shadow-purple-500/70">
                 <span className="relative z-10">Commencer gratuitement</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-purple-700 to-pink-700 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
               </button>
             </Link>
-            <Link href="/auth/login">
-              <button className="px-8 py-4 border-2 border-purple-500/50 rounded-full font-semibold text-lg hover:bg-purple-500/10 hover:border-purple-500 transition-all duration-300">
+            <Link href="/auth/login" className="w-full sm:w-auto">
+              <button className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 border-2 border-purple-500/50 rounded-full font-semibold text-base sm:text-lg hover:bg-purple-500/10 hover:border-purple-500 transition-all duration-300">
                 Se connecter
               </button>
             </Link>
@@ -397,25 +397,25 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.9, duration: 0.8 }}
-            className="mt-16 grid grid-cols-3 gap-8 max-w-2xl mx-auto"
+            className="mt-10 sm:mt-12 md:mt-16 grid grid-cols-3 gap-4 sm:gap-6 md:gap-8 max-w-2xl mx-auto"
           >
             <div className="text-center">
-              <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-2">
+              <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-1 sm:mb-2">
                 1,289+
               </div>
-              <div className="text-sm text-gray-400 uppercase tracking-wide">Utilisateurs</div>
+              <div className="text-xs sm:text-sm text-gray-400 uppercase tracking-wide">Utilisateurs</div>
             </div>
             <div className="text-center">
-              <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-pink-400 to-cyan-400 bg-clip-text text-transparent mb-2">
+              <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-pink-400 to-cyan-400 bg-clip-text text-transparent mb-1 sm:mb-2">
                 47k
               </div>
-              <div className="text-sm text-gray-400 uppercase tracking-wide">Notes</div>
+              <div className="text-xs sm:text-sm text-gray-400 uppercase tracking-wide">Notes</div>
             </div>
             <div className="text-center">
-              <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent mb-2">
+              <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent mb-1 sm:mb-2">
                 94%
               </div>
-              <div className="text-sm text-gray-400 uppercase tracking-wide">Satisfaction</div>
+              <div className="text-xs sm:text-sm text-gray-400 uppercase tracking-wide">Satisfaction</div>
             </div>
           </motion.div>
 
@@ -423,10 +423,10 @@ export default function LandingPage() {
       </div>
 
       {/* Section Films Populaires */}
-      <div id="films" className="relative overflow-hidden bg-gradient-to-b from-black via-purple-950/5 to-black py-24">
+      <div id="films" className="relative overflow-hidden bg-gradient-to-b from-black via-purple-950/5 to-black py-12 sm:py-16 md:py-20 lg:py-24">
         {/* Hero Card avec carrousel en arrière-plan */}
-        <div className="relative max-w-7xl mx-auto px-5">
-          <div className="relative h-[500px] flex items-center justify-center">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-5 md:px-6 lg:px-8">
+          <div className="relative h-[300px] sm:h-[400px] md:h-[450px] lg:h-[500px] flex items-center justify-center">
 
             {/* Carrousel en arrière-plan - Ligne du haut */}
             <div className="absolute top-12 left-0 right-0 flex gap-3 animate-scroll-continuous opacity-30 blur-[2px]">

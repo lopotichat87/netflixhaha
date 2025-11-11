@@ -295,7 +295,7 @@ export default function Navbar() {
                     </button>
                   </Link>
                   <Link href="/auth/signup">
-                    <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg hover:from-purple-700 hover:to-pink-700 transition font-semibold">
+                    <button className="flex items-center gap-2 px-4 py-2 rounded-lg transition font-semibold text-white" style={{ background: 'var(--gradient-button)' }}>
                       <UserPlus size={18} />
                       S'inscrire
                     </button>

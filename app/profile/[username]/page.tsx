@@ -676,7 +676,7 @@ export default function PublicProfilePage() {
       <Navbar />
 
       {/* Banner */}
-      <div className="relative h-64 bg-gradient-to-br from-purple-900 via-pink-900 to-cyan-900">
+      <div className="relative h-64 bg-gradient-to-br from-purple-900 via-pink-900 to-cyan-900 mt-20">
         {profile.banner_url && (
           <img src={profile.banner_url} alt="Banner" className="w-full h-full object-cover opacity-40" />
         )}
@@ -695,61 +695,65 @@ export default function PublicProfilePage() {
 
           {/* Info */}
           <div className="flex-1">
-            <div className="flex items-center gap-4 mb-2">
-              <h1 className="text-4xl font-bold">{profile.username}</h1>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-3 sm:mb-2">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold">{profile.username}</h1>
               {isOwnProfile && (
                 <Link href="/settings">
                   <button 
-                    className="flex items-center gap-2 px-4 py-2 bg-white/10 rounded-lg hover:bg-white/20 transition font-semibold"
+                    className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-white/10 rounded-lg hover:bg-white/20 transition font-semibold text-sm sm:text-base w-full sm:w-auto"
                   >
-                    <Edit3 size={18} />
+                    <Edit3 size={16} className="sm:w-[18px] sm:h-[18px]" />
                     Modifier
                   </button>
                 </Link>
               )}
             </div>
-            <p className="text-gray-400 mb-4">{profile.bio}</p>
+            <p className="text-sm sm:text-base text-gray-400 mb-3 sm:mb-4">{profile.bio}</p>
             
-            {/* Stats */}
-            <div className="flex items-center gap-6 mt-6">
-              <div className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-white">{moviesWatched}</div>
-                <div className="text-xs text-gray-600 mt-1 uppercase tracking-wider">Films</div>
-              </div>
-              <div className="h-10 w-px bg-gray-700"></div>
-              <div className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-white">{seriesWatched}</div>
-                <div className="text-xs text-gray-600 mt-1 uppercase tracking-wider">Séries</div>
-              </div>
-              <div className="h-10 w-px bg-gray-700"></div>
-              <div className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-white">{thisYearWatched}</div>
-                <div className="text-xs text-gray-600 mt-1 uppercase tracking-wider">Cette année</div>
-              </div>
-              <div className="h-10 w-px bg-gray-700"></div>
-              <div className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-white">{followingCount}</div>
-                <div className="text-xs text-gray-600 mt-1 uppercase tracking-wider">Following</div>
-              </div>
-              <div className="h-10 w-px bg-gray-700"></div>
-              <div className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-white">{followersCount}</div>
-                <div className="text-xs text-gray-600 mt-1 uppercase tracking-wider">Followers</div>
+            {/* Stats - Scroll horizontal sur mobile */}
+            <div className="mt-4 sm:mt-6">
+              {/* Mobile + Desktop: Ligne horizontale avec scroll si nécessaire */}
+              <div className="flex items-center gap-3 md:gap-6 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
+                <div className="text-center">
+                  <div className="text-3xl md:text-4xl font-bold text-white">{moviesWatched}</div>
+                  <div className="text-xs text-gray-600 mt-1 uppercase tracking-wider">Films</div>
+                </div>
+                <div className="h-10 w-px bg-gray-700"></div>
+                <div className="text-center">
+                  <div className="text-3xl md:text-4xl font-bold text-white">{seriesWatched}</div>
+                  <div className="text-xs text-gray-600 mt-1 uppercase tracking-wider">Séries</div>
+                </div>
+                <div className="h-10 w-px bg-gray-700"></div>
+                <div className="text-center">
+                  <div className="text-3xl md:text-4xl font-bold text-white">{thisYearWatched}</div>
+                  <div className="text-xs text-gray-600 mt-1 uppercase tracking-wider">Cette année</div>
+                </div>
+                <div className="h-10 w-px bg-gray-700"></div>
+                <div className="text-center">
+                  <div className="text-3xl md:text-4xl font-bold text-white">{followingCount}</div>
+                  <div className="text-xs text-gray-600 mt-1 uppercase tracking-wider">Following</div>
+                </div>
+                <div className="h-10 w-px bg-gray-700"></div>
+                <div className="text-center">
+                  <div className="text-3xl md:text-4xl font-bold text-white">{followersCount}</div>
+                  <div className="text-xs text-gray-600 mt-1 uppercase tracking-wider">Followers</div>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Actions */}
           {!isOwnProfile && (
-            <div className="flex gap-3">
+            <div className="flex gap-3 w-full md:w-auto">
               <button
                 onClick={handleFollow}
                 disabled={followLoading}
-                className={`px-6 py-3 rounded-lg font-semibold transition flex items-center gap-2 ${
+                className={`px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg font-semibold transition flex items-center justify-center gap-2 text-sm sm:text-base flex-1 md:flex-initial ${
                   isFollowing
                     ? 'bg-white/10 hover:bg-red-600/20 border border-white/20 hover:border-red-500'
-                    : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg shadow-purple-500/30'
+                    : 'shadow-lg shadow-purple-500/30'
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
+                style={!isFollowing ? { background: 'var(--gradient-button)' } : {}}
               >
                 {followLoading ? (
                   <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
@@ -765,8 +769,8 @@ export default function PublicProfilePage() {
         </div>
 
         {/* Tabs */}
-        <div className="border-b border-gray-800 mb-8">
-          <div className="flex gap-8">
+        <div className="border-b border-gray-800 mb-6 sm:mb-8 -mx-4 px-4 sm:mx-0 sm:px-0">
+          <div className="flex gap-4 sm:gap-6 md:gap-8 overflow-x-auto scrollbar-hide">
             {[
               { id: 'favorites', label: 'Favoris', icon: Star },
               { id: 'likes', label: 'Likes', icon: Heart },
@@ -779,14 +783,14 @@ export default function PublicProfilePage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-2 pb-4 border-b-2 transition ${
+                className={`flex items-center gap-2 pb-3 sm:pb-4 border-b-2 transition whitespace-nowrap flex-shrink-0 ${
                   activeTab === tab.id
                     ? 'border-purple-500 text-white'
                     : 'border-transparent text-gray-400 hover:text-white'
                 }`}
               >
-                <tab.icon size={18} />
-                {tab.label}
+                <tab.icon size={16} className="sm:w-[18px] sm:h-[18px]" />
+                <span className="text-sm sm:text-base">{tab.label}</span>
               </button>
             ))}
           </div>
