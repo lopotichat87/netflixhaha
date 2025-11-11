@@ -19,12 +19,15 @@ const nextConfig: NextConfig = {
     unoptimized: false,
   },
   experimental: {
-    optimizePackageImports: ['lucide-react', 'framer-motion'],
+    optimizePackageImports: ['lucide-react', 'framer-motion', 'recharts'],
   },
-  reactStrictMode: true,
+  reactStrictMode: false,
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
+  // Optimisations pour le build
+  swcMinify: true,
+  poweredByHeader: false,
 };
 
 export default nextConfig;

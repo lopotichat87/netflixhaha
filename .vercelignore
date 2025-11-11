@@ -1,0 +1,14 @@
+*.md
+*.sql
+.git
+.vscode
+.idea
+*.log
+node_modules
+.next
+out
+dist
+coverage
+.env.local
+.env.*.local
+*.code-workspace
