@@ -31,12 +31,21 @@ export default function TrendingPage() {
     setLoading(true);
     try {
       const API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
-      const endpoint = `https://api.themoviedb.org/3/trending/${mediaType}/${timeWindow}?api_key=${API_KEY}&language=fr-FR`;
       
-      const response = await fetch(endpoint);
-      const data = await response.json();
+      // Charger les 3 premières pages pour avoir plus de contenu
+      const pages = [1, 2, 3];
+      const allResults = await Promise.all(
+        pages.map(async (page) => {
+          const endpoint = `https://api.themoviedb.org/3/trending/${mediaType}/${timeWindow}?api_key=${API_KEY}&language=fr-FR&page=${page}`;
+          const response = await fetch(endpoint);
+          const data = await response.json();
+          return data.results || [];
+        })
+      );
       
-      setTrendingMedia(data.results || []);
+      // Combiner tous les résultats
+      const combinedResults = allResults.flat();
+      setTrendingMedia(combinedResults);
     } catch (error) {
       console.error('Error loading trending:', error);
     } finally {
@@ -157,7 +166,7 @@ export default function TrendingPage() {
                     <div className="absolute -top-2 -left-2 z-20 w-10 h-10 bg-gradient-to-br from-orange-500 to-red-500 rounded-full flex items-center justify-center text-xs font-bold shadow-lg">
                       #{index + 1}
                     </div>
-                    <MovieCard media={{ ...media, media_type: media.media_type || mediaType }} />
+                    <MovieCard media={{ ...media, media_type: media.media_type || mediaType }} size="large" />
                   </div>
                 </motion.div>
               ))}

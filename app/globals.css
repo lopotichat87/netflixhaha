@@ -110,3 +110,85 @@ div[class*="modal"][class*="ad"] {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Animation de défilement infini */
+@keyframes scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-scroll {
+  animation: scroll 30s linear infinite;
+  display: flex;
+  width: max-content;
+}
+
+.animate-scroll:hover {
+  animation-play-state: paused;
+}
+
+/* Animation continue sans pause */
+.animate-scroll-continuous {
+  animation: scroll 60s linear infinite;
+  display: flex;
+  width: max-content;
+}
+
+/* Animation en sens inverse */
+@keyframes scroll-reverse {
+  0% {
+    transform: translateX(-50%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.animate-scroll-reverse {
+  animation: scroll-reverse 60s linear infinite;
+  display: flex;
+  width: max-content;
+}
+
+/* Cacher la scrollbar par défaut */
+::-webkit-scrollbar {
+  display: none;
+}
+
+* {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Gradient hover qui suit la souris pour les bento cards */
+.bento-card {
+  --mouse-x: 0px;
+  --mouse-y: 0px;
+  --opacity: 0;
+  position: relative;
+}
+
+.bento-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    600px circle at var(--mouse-x) var(--mouse-y),
+    rgba(168, 85, 247, 0.15),
+    transparent 40%
+  );
+  opacity: var(--opacity);
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.bento-card > * {
+  position: relative;
+  z-index: 2;
+}

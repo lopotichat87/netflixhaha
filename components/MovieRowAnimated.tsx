@@ -103,7 +103,7 @@ export default function MovieRowAnimated({ title, media }: MovieRowProps) {
           {media.map((item) => (
             <div 
               key={item.id} 
-              className="min-w-[120px] md:min-w-[150px]"
+              className="w-[100px] md:w-[130px] flex-shrink-0"
             >
               <MovieCard media={item} />
             </div>

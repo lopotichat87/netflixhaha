@@ -9,7 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { favoritesHelpers } from '@/lib/supabase';
 import { ratingsHelpers } from '@/lib/ratings';
 
-export default function MovieCard({ media }: { media: Media }) {
+export default function MovieCard({ media, size = 'small' }: { media: Media; size?: 'small' | 'large' }) {
   const [isHovered, setIsHovered] = useState(false);
   const [userRating, setUserRating] = useState<number | null>(null);
   const [isLiked, setIsLiked] = useState(false);
@@ -103,14 +103,14 @@ export default function MovieCard({ media }: { media: Media }) {
           />
 
           {/* Media Type Badge */}
-          <div className="absolute top-2 left-2 z-10">
+          <div className="absolute top-2 left-2 z-30">
             <div className="bg-black/90 backdrop-blur-sm px-2.5 py-1 rounded-full text-xs font-bold border border-white/10 shadow-lg">
               {mediaType === 'tv' ? '📺 Série' : '🎬 Film'}
             </div>
           </div>
 
           {/* Status Badges - Top Right */}
-          <div className="absolute top-2 right-2 flex flex-col gap-1.5 z-10">
+          <div className="absolute top-2 right-2 flex flex-col gap-1.5 z-30">
             {/* Rating Badge */}
             {userRating && (
               <motion.div 
@@ -151,7 +151,7 @@ export default function MovieCard({ media }: { media: Media }) {
           </div>
           
           {/* TMDB Rating - Bottom Left */}
-          <div className="absolute bottom-2 left-2 bg-black/90 backdrop-blur-sm px-2.5 py-1 rounded-full flex items-center gap-1 shadow-lg border border-white/10 z-10">
+          <div className="absolute bottom-2 left-2 bg-black/90 backdrop-blur-sm px-2.5 py-1 rounded-full flex items-center gap-1 shadow-lg border border-white/10 z-30">
             <span className="text-xs font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
               {Math.round(media.vote_average * 10)}%
             </span>
@@ -161,14 +161,14 @@ export default function MovieCard({ media }: { media: Media }) {
           <AnimatePresence>
             {isHovered && (
               <motion.div 
-                className="absolute inset-0 bg-gradient-to-t from-black via-black/95 to-black/40 flex flex-col justify-end p-3 z-20"
+                className="absolute inset-0 bg-gradient-to-t from-black via-black/95 to-black/40 flex flex-col justify-center p-3 z-20"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.2, ease: "easeOut" }}
               >
                 {/* Content */}
-                <div className="space-y-2">
+                <div className="space-y-2 mt-auto mb-8">
                   <h3 className="font-bold text-sm line-clamp-1 leading-tight">
                     {getTitle(media)}
                   </h3>
@@ -192,24 +192,24 @@ export default function MovieCard({ media }: { media: Media }) {
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex items-center gap-1.5 pt-1">
+                  <div className={`flex items-center ${size === 'large' ? 'gap-2' : 'gap-1'} pt-1`}>
                     <button 
                       onClick={toggleFavorite}
-                      className={`flex items-center gap-1 px-2.5 py-1 rounded-md font-semibold text-xs transition ${
+                      className={`flex items-center justify-center ${size === 'large' ? 'gap-1 px-3 py-1.5 text-[11px]' : 'gap-0.5 px-2 py-0.5 text-[9.5px]'} rounded font-medium transition ${
                         isLiked 
                           ? 'bg-gradient-to-r from-pink-500 to-red-500 text-white' 
                           : 'bg-white/15 hover:bg-white/25 text-white'
                       }`}
                     >
-                      <Heart size={11} fill={isLiked ? 'currentColor' : 'none'} />
-                      <span className="hidden sm:inline">{isLiked ? 'Liké' : 'J\'aime'}</span>
+                      <Heart size={size === 'large' ? 12 : 10} fill={isLiked ? 'currentColor' : 'none'} />
+                      <span>{isLiked ? 'Liké' : 'J\'aime'}</span>
                     </button>
                     
                     <button 
-                      className="flex items-center gap-1 px-2.5 py-1 rounded-md font-semibold text-xs bg-white/15 hover:bg-white/25 transition text-white"
+                      className={`flex items-center justify-center ${size === 'large' ? 'gap-1 px-3 py-1.5 text-[11px]' : 'gap-0.5 px-2 py-0.5 text-[9.5px]'} rounded font-medium bg-white/15 hover:bg-white/25 transition text-white`}
                     >
-                      <Plus size={11} />
-                      <span className="hidden sm:inline">Liste</span>
+                      <Plus size={size === 'large' ? 12 : 10} />
+                      <span>Liste</span>
                     </button>
                   </div>
                 </div>

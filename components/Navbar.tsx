@@ -222,9 +222,9 @@ export default function Navbar() {
                       }}
                     >
                       {[
+                        { href: '/social', label: 'Social', icon: 'Users' },
                         { href: '/friends', label: 'Mes Amis', icon: 'Users' },
-                        { href: '/calendar', label: 'Calendrier', icon: 'Calendar' },
-                        { href: '/activity', label: 'Activités', icon: 'MessageSquare' }
+                        { href: '/calendar', label: 'Calendrier', icon: 'Calendar' }
                       ].map((item) => (
                         <motion.div
                           key={item.href}

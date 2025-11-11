@@ -66,6 +66,7 @@ export default function PublicProfilePage() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [followersProfiles, setFollowersProfiles] = useState<any[]>([]);
   const [followingProfiles, setFollowingProfiles] = useState<any[]>([]);
+  const [userLists, setUserLists] = useState<any[]>([]);
   const { user: currentUser } = useAuth();
 
   useEffect(() => {
@@ -136,46 +137,42 @@ export default function PublicProfilePage() {
       const { data: { user } } = await supabase.auth.getUser();
       setIsOwnProfile(user?.id === profileData.user_id);
 
-      // Charger les followers avec leurs profils
+      // Charger les followers (ceux qui suivent ce profil)
       const { data: followersData, count: followersCount } = await supabase
-        .from('friendships')
-        .select('user_id', { count: 'exact' })
-        .eq('friend_id', profileData.user_id)
-        .eq('status', 'accepted');
+        .from('follows')
+        .select('follower_id', { count: 'exact' })
+        .eq('following_id', profileData.user_id);
 
-      // Charger les profils des followers
       let followersProfilesData: any[] = [];
       if (followersData && followersData.length > 0) {
-        const followerIds = followersData.map(f => f.user_id);
+        const followerIds = followersData.map((f: any) => f.follower_id);
         const { data: profiles } = await supabase
           .from('profiles')
-          .select('username, avatar_url')
-          .in('user_id', followerIds)
-          .limit(10);
+          .select('user_id, username, avatar_url')
+          .in('user_id', followerIds);
+        
         followersProfilesData = profiles || [];
       }
 
-      // Charger les following avec leurs profils
+      // Charger les following (ceux que ce profil suit)
       const { data: followingData, count: followingCount } = await supabase
-        .from('friendships')
-        .select('friend_id', { count: 'exact' })
-        .eq('user_id', profileData.user_id)
-        .eq('status', 'accepted');
+        .from('follows')
+        .select('following_id', { count: 'exact' })
+        .eq('follower_id', profileData.user_id);
 
-      // Charger les profils des following
       let followingProfilesData: any[] = [];
       if (followingData && followingData.length > 0) {
-        const followingIds = followingData.map(f => f.friend_id);
+        const followingIds = followingData.map((f: any) => f.following_id);
         const { data: profiles } = await supabase
           .from('profiles')
-          .select('username, avatar_url')
-          .in('user_id', followingIds)
-          .limit(10);
+          .select('user_id, username, avatar_url')
+          .in('user_id', followingIds);
+        
         followingProfilesData = profiles || [];
       }
 
-      console.log('👥 Followers:', followersCount, followersProfilesData);
-      console.log('👤 Following:', followingCount, followingProfilesData);
+      console.log('👥 Followers:', followersCount, '→', followersProfilesData.length, 'profils');
+      console.log('👤 Following:', followingCount, '→', followingProfilesData.length, 'profils');
 
       setFollowersCount(followersCount || 0);
       setFollowingCount(followingCount || 0);
@@ -184,15 +181,14 @@ export default function PublicProfilePage() {
 
       // Vérifier si l'utilisateur suit déjà ce profil
       if (user?.id && user.id !== profileData.user_id) {
-        const { data: friendship } = await supabase
-          .from('friendships')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('friend_id', profileData.user_id)
-          .eq('status', 'accepted')
+        const { data: followData } = await supabase
+          .from('follows')
+          .select('id')
+          .eq('follower_id', user.id)
+          .eq('following_id', profileData.user_id)
           .single();
 
-        setIsFollowing(!!friendship);
+        setIsFollowing(!!followData);
       }
 
       // Charger TOUTES les stats pour ce user
@@ -519,6 +515,37 @@ export default function PublicProfilePage() {
         monthlyActivity.push(count || 0);
       }
       setActivityData(monthlyActivity);
+
+      // Charger les listes de l'utilisateur
+      const { data: listsData, error: listsError } = await supabase
+        .from('user_lists')
+        .select('*')
+        .eq('user_id', profileData.user_id)
+        .order('created_at', { ascending: false });
+
+      if (listsError) {
+        console.error('Erreur chargement listes:', listsError);
+      } else {
+        // Pour chaque liste, charger les éléments
+        const listsWithItems = await Promise.all(
+          (listsData || []).map(async (list: any) => {
+            const { data: itemsData, count } = await supabase
+              .from('list_items')
+              .select('media_id, media_type, media_title, media_poster_path', { count: 'exact' })
+              .eq('list_id', list.id)
+              .limit(4);
+
+            return {
+              ...list,
+              items: itemsData || [],
+              itemsCount: count || 0,
+            };
+          })
+        );
+
+        console.log('Listes chargées:', listsWithItems.length);
+        setUserLists(listsWithItems);
+      }
 
     } catch (error) {
       console.error('Error loading profile:', error);
@@ -1191,16 +1218,24 @@ export default function PublicProfilePage() {
 
           {activeTab === 'ratings' && (
             <div>
-              <h2 className="text-2xl font-bold mb-6">Films notés ({profile.stats.rated})</h2>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold">Films & Séries notés ({profile.stats.rated})</h2>
+                {ratedMovies.length > 6 && (
+                  <Link
+                    href="/activity"
+                    className="text-sm text-purple-400 hover:text-purple-300 transition flex items-center gap-1"
+                  >
+                    Tout voir →
+                  </Link>
+                )}
+              </div>
               {ratedMovies.length > 0 ? (
                 <>
-                  <div className="space-y-3">
-                    {(showAllRatings ? ratedMovies : ratedMovies.slice(0, 12)).map((movie) => (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {ratedMovies.slice(0, 6).map((movie) => (
                       <Link key={movie.id} href={`/${movie.media_type}/${movie.id}`}>
-                        <motion.div
-                          whileHover={{ scale: 1.02, y: -2 }}
-                          transition={{ duration: 0.2 }}
-                          className="flex gap-4 p-4 bg-gradient-to-r from-white/5 to-white/[0.02] rounded-xl hover:from-white/10 hover:to-white/5 transition-all border border-white/5 hover:border-purple-500/30 shadow-lg hover:shadow-purple-500/10"
+                        <div
+                          className="flex gap-4 p-4 bg-gradient-to-r from-white/5 to-white/[0.02] rounded-xl transition-all border border-white/5 shadow-lg"
                         >
                           <div className="w-20 h-28 rounded-lg overflow-hidden flex-shrink-0">
                             {movie.poster_path ? (
@@ -1227,20 +1262,10 @@ export default function PublicProfilePage() {
                               <p className="text-gray-400 text-sm line-clamp-2">{movie.review}</p>
                             )}
                           </div>
-                        </motion.div>
+                        </div>
                       </Link>
                     ))}
                   </div>
-                  {ratedMovies.length > 12 && !showAllRatings && (
-                    <div className="text-center mt-8">
-                      <button
-                        onClick={() => setShowAllRatings(true)}
-                        className="px-6 py-2.5 bg-white/10 border border-white/20 rounded-lg hover:bg-white/15 transition font-medium text-sm"
-                      >
-                        Voir plus ({ratedMovies.length - 12})
-                      </button>
-                    </div>
-                  )}
                 </>
               ) : (
                 <div className="text-center py-12 text-gray-400">
@@ -1296,9 +1321,95 @@ export default function PublicProfilePage() {
           )}
 
           {activeTab === 'lists' && (
-            <div className="text-center py-12 text-gray-400">
-              <List size={48} className="mx-auto mb-4 opacity-20" />
-              <p>Fonctionnalité à venir</p>
+            <div>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold">Listes ({userLists.length})</h2>
+                {isOwnProfile && (
+                  <Link href="/my-lists">
+                    <button className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition flex items-center gap-2">
+                      <List size={18} />
+                      Gérer mes listes
+                    </button>
+                  </Link>
+                )}
+              </div>
+
+              {userLists.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {userLists.map((list: any) => (
+                    <Link key={list.id} href={`/my-lists/${list.id}`}>
+                      <motion.div
+                        whileHover={{ y: -4, scale: 1.01 }}
+                        transition={{ duration: 0.2 }}
+                        className="group bg-gradient-to-br from-white/5 to-white/[0.02] rounded-xl border border-white/10 hover:border-purple-500/30 overflow-hidden cursor-pointer"
+                      >
+                        {/* Preview des posters */}
+                        <div className="relative h-40 bg-gradient-to-br from-purple-900/20 to-pink-900/20 overflow-hidden">
+                          {list.items.length > 0 ? (
+                            <div className="flex h-full">
+                              {list.items.slice(0, 4).map((item: any, idx: number) => (
+                                <div key={idx} className="flex-1 relative">
+                                  {item.media_poster_path ? (
+                                    <img
+                                      src={`https://image.tmdb.org/t/p/w300${item.media_poster_path}`}
+                                      alt={item.media_title}
+                                      className="w-full h-full object-cover opacity-70 group-hover:opacity-90 transition-opacity"
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full bg-gray-800 flex items-center justify-center">
+                                      <Film size={32} className="text-gray-600" />
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="flex items-center justify-center h-full">
+                              <List size={48} className="text-gray-600" />
+                            </div>
+                          )}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                          
+                          {/* Badge nombre d'éléments */}
+                          <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/10">
+                            <span className="text-sm font-semibold">{list.itemsCount} {list.itemsCount > 1 ? 'éléments' : 'élément'}</span>
+                          </div>
+                        </div>
+
+                        {/* Info de la liste */}
+                        <div className="p-4">
+                          <h3 className="text-xl font-bold mb-2 group-hover:text-purple-400 transition">
+                            {list.name}
+                          </h3>
+                          {list.description && (
+                            <p className="text-sm text-gray-400 line-clamp-2 mb-3">
+                              {list.description}
+                            </p>
+                          )}
+                          <div className="flex items-center gap-2 text-xs text-gray-500">
+                            <Calendar size={14} />
+                            <span>Créée le {new Date(list.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                          </div>
+                        </div>
+                      </motion.div>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-20 bg-white/5 rounded-xl border-2 border-dashed border-gray-700">
+                  <List size={64} className="mx-auto mb-4 text-purple-500/20" />
+                  <p className="text-lg font-semibold text-gray-400 mb-2">
+                    {isOwnProfile ? 'Aucune liste créée' : `${profile.username} n'a pas encore de liste`}
+                  </p>
+                  {isOwnProfile && (
+                    <Link href="/my-lists">
+                      <button className="mt-4 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-lg transition font-semibold">
+                        Créer ma première liste
+                      </button>
+                    </Link>
+                  )}
+                </div>
+              )}
             </div>
           )}
 

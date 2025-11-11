@@ -1,26 +1,16 @@
 'use client';
 
 import Link from 'next/link';
+import PublicNav from '@/components/PublicNav';
+import { Film } from 'lucide-react';
 
 export default function PrivacyPage() {
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Header */}
-      <header className="border-b border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 py-6 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="text-3xl font-bold bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500 bg-clip-text text-transparent">
-              ReelVibe
-            </div>
-          </Link>
-          <Link href="/landing" className="text-gray-400 hover:text-white transition">
-            Retour
-          </Link>
-        </div>
-      </header>
+      <PublicNav />
 
       {/* Content */}
-      <div className="max-w-4xl mx-auto px-4 py-16">
+      <div className="max-w-4xl mx-auto px-4 py-16 pt-32">
         <h1 className="text-5xl font-bold mb-6">Politique de Confidentialité</h1>
         <p className="text-gray-400 mb-12">Dernière mise à jour : Novembre 2025</p>
 

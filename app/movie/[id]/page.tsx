@@ -91,7 +91,7 @@ export default function MoviePage() {
     checkStatus();
   }, [user, movieId]);
 
-  const toggleFavorite = async () => {
+  const handleToggleFavorite = async () => {
     if (!user) {
       alert('Connectez-vous pour ajouter des favoris');
       return;
@@ -100,22 +100,19 @@ export default function MoviePage() {
     if (!movie) return;
 
     try {
-      if (isLiked) {
-        await favoritesHelpers.removeFromFavorites(user.id, movieId);
-        setIsLiked(false);
-      } else {
-        await favoritesHelpers.addToFavorites(
-          user.id,
-          movieId,
-          'movie',
-          movie.title,
-          movie.poster_path || ''
-        );
-        setIsLiked(true);
-      }
+      const newLikedState = !isLiked;
+      await ratingsHelpers.toggleLike(
+        user.id,
+        movieId,
+        'movie',
+        movie.title,
+        movie.poster_path || '',
+        newLikedState
+      );
+      setIsLiked(newLikedState);
     } catch (error) {
       console.error('Error toggling favorite:', error);
-      alert('Erreur lors de l\'ajout aux favoris. Vérifiez votre connexion Supabase.');
+      alert('Erreur lors de la modification du like.');
     }
   };
 
@@ -182,7 +179,7 @@ export default function MoviePage() {
               </button>
 
               <button 
-                onClick={toggleFavorite}
+                onClick={handleToggleFavorite}
                 className={`flex items-center gap-2 px-6 py-3 rounded font-semibold transition ${
                   isLiked 
                     ? 'bg-red-600 hover:bg-red-700' 
@@ -201,9 +198,11 @@ export default function MoviePage() {
               />
             </div>
 
-            <p className="text-base md:text-lg line-clamp-4 drop-shadow-xl max-w-xl">
-              {movie.overview}
-            </p>
+            {movie.overview && (
+              <p className="text-base md:text-lg line-clamp-3 drop-shadow-xl max-w-2xl leading-relaxed text-gray-100">
+                {movie.overview}
+              </p>
+            )}
           </div>
         </div>
 
@@ -212,10 +211,17 @@ export default function MoviePage() {
           <div className="grid md:grid-cols-3 gap-8">
             {/* Left Column - Additional Info */}
             <div className="md:col-span-2 space-y-6">
-              <div>
-                <h2 className="text-2xl font-semibold mb-4">Synopsis</h2>
-                <p className="text-gray-300 leading-relaxed">{movie.overview}</p>
-              </div>
+              {movie.overview && (
+                <div className="bg-gray-900/50 backdrop-blur-sm rounded-lg p-6 border border-gray-800">
+                  <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                    <Film size={24} className="text-red-600" />
+                    Synopsis
+                  </h2>
+                  <p className="text-gray-300 text-base md:text-lg leading-relaxed">
+                    {movie.overview}
+                  </p>
+                </div>
+              )}
 
               {trailer && (
                 <div>

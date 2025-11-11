@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { favoritesHelpers, Favorite } from '@/lib/supabase';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import Navbar from '@/components/Navbar';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { Heart, Sparkles, ArrowLeft, Film, Star } from 'lucide-react';
@@ -12,25 +12,63 @@ import { useRouter } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
+const ITEMS_PER_PAGE = 24;
+
 export default function LikesPage() {
   const { user } = useAuth();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const observerTarget = useRef<HTMLDivElement>(null);
   const [confirmDialog, setConfirmDialog] = useState<{ isOpen: boolean; mediaId: number | null }>({
     isOpen: false,
     mediaId: null,
   });
 
-  const { data: favorites = [], isLoading: loading } = useQuery({
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading: loading,
+  } = useInfiniteQuery({
     queryKey: ['favorites', user?.id],
-    queryFn: async () => {
+    queryFn: async ({ pageParam = 0 }) => {
       if (!user) return [];
-      return await favoritesHelpers.getFavorites(user.id);
+      return await favoritesHelpers.getFavorites(user.id, ITEMS_PER_PAGE, pageParam * ITEMS_PER_PAGE);
+    },
+    getNextPageParam: (lastPage, allPages) => {
+      return lastPage.length === ITEMS_PER_PAGE ? allPages.length : undefined;
     },
     enabled: !!user,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
+    initialPageParam: 0,
   });
+
+  const favorites = data?.pages.flat() || [];
+
+  // Infinite scroll observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    const target = observerTarget.current;
+    if (target) {
+      observer.observe(target);
+    }
+
+    return () => {
+      if (target) {
+        observer.unobserve(target);
+      }
+    };
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const removeFavorite = async (mediaId: number) => {
     if (!user) return;
@@ -131,6 +169,7 @@ export default function LikesPage() {
               </Link>
             </div>
           ) : (
+            <>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
               {favorites.map((item) => {
                 const isFavorite = (item as any).is_favorite === true;
@@ -204,6 +243,18 @@ export default function LikesPage() {
                 );
               })}
             </div>
+            
+            {/* Infinite scroll trigger */}
+            <div ref={observerTarget} className="py-8 text-center">
+              {isFetchingNextPage && (
+                <div className="flex justify-center items-center gap-2">
+                  <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                </div>
+              )}
+            </div>
+            </>
           )}
         </div>
       )}

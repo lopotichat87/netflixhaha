@@ -163,7 +163,7 @@ export default function MoviesPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: index * 0.02 }}
                 >
-                  <MovieCard media={movie} />
+                  <MovieCard media={movie} size="large" />
                 </motion.div>
               ))}
             </div>

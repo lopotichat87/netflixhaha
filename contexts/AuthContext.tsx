@@ -40,64 +40,99 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   });
 
   useEffect(() => {
-    // Vérifier la session actuelle
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
-      if (error) {
-        console.error('Session error:', error);
-        // Nettoyer le localStorage si le refresh token est invalide
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem('currentUserId');
-          localStorage.removeItem('pinVerified');
+    let mounted = true;
+
+    // Vérifier la session actuelle au chargement
+    const initSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (!mounted) return;
+
+        if (error) {
+          console.error('Session error:', error);
+          setUser(null);
+          setProfile(null);
+          setLoading(false);
+          return;
         }
-        setUser(null);
-        setProfile(null);
-        setLoading(false);
-        return;
-      }
-      
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        // Stocker l'ID utilisateur
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('currentUserId', session.user.id);
+        
+        if (session?.user) {
+          setUser(session.user);
+          
+          // Stocker l'ID utilisateur de manière fiable
+          if (typeof window !== 'undefined') {
+            try {
+              localStorage.setItem('currentUserId', session.user.id);
+              localStorage.setItem('userEmail', session.user.email || '');
+            } catch (e) {
+              console.error('LocalStorage error:', e);
+            }
+          }
+          
+          await loadProfile(session.user.id);
+        } else {
+          setUser(null);
+          setLoading(false);
         }
-        loadProfile(session.user.id);
-      } else {
-        setLoading(false);
+      } catch (error) {
+        console.error('Init session error:', error);
+        if (mounted) {
+          setUser(null);
+          setProfile(null);
+          setLoading(false);
+        }
       }
-    });
+    };
+
+    initSession();
 
     // Écouter les changements d'authentification
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return;
+
       if (event === 'SIGNED_OUT') {
         setUser(null);
         setProfile(null);
         setPinVerified(false);
         if (typeof window !== 'undefined') {
-          const userId = localStorage.getItem('currentUserId');
-          localStorage.removeItem(`pinVerified_${userId}`);
-          localStorage.removeItem('currentUserId');
+          try {
+            const userId = localStorage.getItem('currentUserId');
+            localStorage.removeItem(`pinVerified_${userId}`);
+            localStorage.removeItem('currentUserId');
+            localStorage.removeItem('userEmail');
+          } catch (e) {
+            console.error('LocalStorage cleanup error:', e);
+          }
         }
         setLoading(false);
       } else if (event === 'SIGNED_IN' && session?.user) {
         setUser(session.user);
         if (typeof window !== 'undefined') {
-          localStorage.setItem('currentUserId', session.user.id);
-          // Vérifier si le PIN est déjà validé pour cet utilisateur
-          const pinStatus = localStorage.getItem(`pinVerified_${session.user.id}`);
-          setPinVerified(pinStatus === 'true');
+          try {
+            localStorage.setItem('currentUserId', session.user.id);
+            localStorage.setItem('userEmail', session.user.email || '');
+            // Vérifier si le PIN est déjà validé pour cet utilisateur
+            const pinStatus = localStorage.getItem(`pinVerified_${session.user.id}`);
+            setPinVerified(pinStatus === 'true');
+          } catch (e) {
+            console.error('LocalStorage error:', e);
+          }
         }
-        loadProfile(session.user.id);
+        await loadProfile(session.user.id);
+      } else if (event === 'USER_UPDATED' && session?.user) {
+        setUser(session.user);
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const loadProfile = async (userId: string, forceRefresh = false) => {
     try {
-      console.log('🔄 Chargement du profil pour:', userId);
-      
       // Toujours récupérer depuis la base de données (pas de cache)
       const { data, error } = await supabase
         .from('profiles')

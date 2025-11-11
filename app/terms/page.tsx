@@ -4,12 +4,15 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { FileText, Check } from 'lucide-react';
 import Footer from '@/components/Footer';
+import PublicNav from '@/components/PublicNav';
 
 export default function TermsPage() {
   return (
     <div className="min-h-screen bg-black text-white">
+      <PublicNav />
+
       {/* Hero */}
-      <div className="relative py-24 px-4 overflow-hidden">
+      <div className="relative py-24 px-4 overflow-hidden pt-32">
         <div className="absolute inset-0 bg-gradient-to-b from-purple-900/20 to-black" />
         
         <motion.div
@@ -36,6 +39,7 @@ export default function TermsPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
           className="mb-12"
+        >
           <p className="text-gray-300 leading-relaxed text-lg">
             En accédant et en utilisant ReelVibe, vous acceptez d'être lié par ces conditions d'utilisation. 
             Si vous n'acceptez pas ces conditions, veuillez ne pas utiliser notre service.
@@ -60,7 +64,7 @@ export default function TermsPage() {
               notre politique de confidentialité et toutes les règles applicables. Ces conditions constituent 
               un accord légal entre vous et ReelVibe.
             </p>
-          </div>
+          </motion.div>
 
           <div>
             <h2 className="text-2xl font-bold mb-4 text-purple-400">2. Utilisation du service</h2>

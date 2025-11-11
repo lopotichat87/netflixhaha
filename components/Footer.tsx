@@ -9,9 +9,9 @@ export default function Footer() {
   return (
     <footer className="bg-black/50 border-t border-white/10 mt-20">
       <div className="max-w-7xl mx-auto px-4 md:px-16 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           {/* Logo et description */}
-          <div className="md:col-span-2">
+          <div className="md:col-span-1">
             <div className="flex items-center gap-2 mb-4">
               <Film size={32} className="text-purple-500" />
               <span className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
@@ -23,32 +23,7 @@ export default function Footer() {
             </p>
           </div>
 
-          {/* Navigation */}
-          <div>
-            <h3 className="font-semibold mb-4 text-sm">Navigation</h3>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <Link href="/movies" className="text-gray-400 hover:text-white transition">
-                  Films
-                </Link>
-              </li>
-              <li>
-                <Link href="/tv-shows" className="text-gray-400 hover:text-white transition">
-                  Séries
-                </Link>
-              </li>
-              <li>
-                <Link href="/activity" className="text-gray-400 hover:text-white transition">
-                  Activité
-                </Link>
-              </li>
-              <li>
-                <Link href="/search" className="text-gray-400 hover:text-white transition">
-                  Recherche
-                </Link>
-              </li>
-            </ul>
-          </div>
+          {/* Navigation - Retiré */}
 
           {/* À propos */}
           <div>
@@ -60,19 +35,19 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-white transition">
+                <Link href="/help" className="text-gray-400 hover:text-white transition">
                   Aide
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-white transition">
+                <Link href="/terms" className="text-gray-400 hover:text-white transition">
                   Conditions
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-white transition">
+                <Link href="/privacy" className="text-gray-400 hover:text-white transition">
                   Confidentialité
-                </a>
+                </Link>
               </li>
             </ul>
           </div>

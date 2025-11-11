@@ -31,7 +31,7 @@ function LoginForm() {
 
     try {
       await authHelpers.signIn(email, password);
-      router.push('/');
+      router.push('/home');
       router.refresh();
     } catch (err: any) {
       setError(err.message || 'Email ou mot de passe incorrect');

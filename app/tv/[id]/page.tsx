@@ -13,6 +13,7 @@ import { ratingsHelpers } from '@/lib/ratings';
 import { api, getImageUrl, getTitle, getReleaseDate } from '@/lib/api';
 import Navbar from '@/components/Navbar';
 import MovieRow from '@/components/MovieRow';
+import Comments from '@/components/Comments';
 
 export default function TVPage() {
   const params = useParams();
@@ -86,22 +87,19 @@ export default function TVPage() {
     if (!tvShow) return;
 
     try {
-      if (isLiked) {
-        await favoritesHelpers.removeFromFavorites(user.id, tvId);
-        setIsLiked(false);
-      } else {
-        await favoritesHelpers.addToFavorites(
-          user.id,
-          tvId,
-          'tv',
-          getTitle(tvShow),
-          tvShow.poster_path || ''
-        );
-        setIsLiked(true);
-      }
+      const newLikedState = !isLiked;
+      await ratingsHelpers.toggleLike(
+        user.id,
+        tvId,
+        'tv',
+        getTitle(tvShow),
+        tvShow.poster_path || '',
+        newLikedState
+      );
+      setIsLiked(newLikedState);
     } catch (error) {
       console.error('Error toggling favorite:', error);
-      alert('Erreur lors de l\'ajout aux favoris.');
+      alert('Erreur lors de la modification du like.');
     }
   };
 
@@ -191,9 +189,11 @@ export default function TVPage() {
               />
             </div>
 
-            <p className="text-base md:text-lg line-clamp-4 drop-shadow-xl max-w-xl">
-              {tvShow.overview}
-            </p>
+            {tvShow.overview && (
+              <p className="text-base md:text-lg line-clamp-3 drop-shadow-xl max-w-2xl leading-relaxed text-gray-100">
+                {tvShow.overview}
+              </p>
+            )}
           </div>
         </div>
 
@@ -202,10 +202,17 @@ export default function TVPage() {
           <div className="grid md:grid-cols-3 gap-8">
             {/* Left Column - Additional Info */}
             <div className="md:col-span-2 space-y-6">
-              <div>
-                <h2 className="text-2xl font-semibold mb-4">Synopsis</h2>
-                <p className="text-gray-300 leading-relaxed">{tvShow.overview}</p>
-              </div>
+              {tvShow.overview && (
+                <div className="bg-gray-900/50 backdrop-blur-sm rounded-lg p-6 border border-gray-800">
+                  <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                    <Tv size={24} className="text-red-600" />
+                    Synopsis
+                  </h2>
+                  <p className="text-gray-300 text-base md:text-lg leading-relaxed">
+                    {tvShow.overview}
+                  </p>
+                </div>
+              )}
 
               {trailer && (
                 <div>
@@ -353,6 +360,11 @@ export default function TVPage() {
             </div>
           </div>
         )}
+
+        {/* Comments Section */}
+        <div className="px-4 md:px-16 pb-12">
+          <Comments mediaId={tvId} mediaType="tv" />
+        </div>
 
         {/* Similar TV Shows */}
         {similar.length > 0 && (

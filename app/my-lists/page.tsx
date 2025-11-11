@@ -52,7 +52,28 @@ export default function MyListsPage() {
   const loadListItems = async (listId: string) => {
     try {
       const items = await listsHelpers.getListItems(listId);
-      setListItems(items);
+      
+      // Enrichir avec les données TMDB
+      const API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+      const enrichedItems = await Promise.all(
+        items.map(async (item) => {
+          try {
+            const response = await fetch(
+              `https://api.themoviedb.org/3/${item.media_type}/${item.media_id}?api_key=${API_KEY}&language=fr-FR`
+            );
+            const tmdbData = await response.json();
+            return {
+              ...item,
+              vote_average: tmdbData.vote_average || 0,
+              release_date: tmdbData.release_date || tmdbData.first_air_date || '',
+            };
+          } catch (error) {
+            return item;
+          }
+        })
+      );
+      
+      setListItems(enrichedItems);
     } catch (error) {
       console.error('Error loading list items:', error);
     }
@@ -199,20 +220,21 @@ export default function MyListsPage() {
                         media={{
                           id: item.media_id,
                           media_type: item.media_type,
-                          title: item.media_type === 'movie' ? item.title : undefined,
-                          name: item.media_type === 'tv' ? item.title : undefined,
-                          poster_path: item.poster_path,
+                          title: item.media_type === 'movie' ? item.media_title : undefined,
+                          name: item.media_type === 'tv' ? item.media_title : undefined,
+                          poster_path: item.media_poster_path,
                           backdrop_path: null,
-                          vote_average: 0,
+                          vote_average: (item as any).vote_average || 0,
                           vote_count: 0,
                           popularity: 0,
                           genre_ids: [],
                           overview: '',
-                          release_date: '',
-                          first_air_date: '',
+                          release_date: (item as any).release_date || '',
+                          first_air_date: (item as any).release_date || '',
                           adult: false,
                           original_language: 'fr',
                         }}
+                        size="large"
                       />
                     ))}
                   </div>

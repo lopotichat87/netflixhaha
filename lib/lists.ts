@@ -19,19 +19,24 @@ export interface ListItem {
   list_id: string;
   media_id: number;
   media_type: 'movie' | 'tv';
-  title: string;
-  poster_path: string | null;
+  media_title: string;
+  media_poster_path: string | null;
   added_at: string;
 }
 
 async function getUserLists(userId: string): Promise<UserList[]> {
+  console.log('🔍 getUserLists called with userId:', userId);
   const { data, error } = await supabase
     .from('user_lists')
     .select('*')
     .eq('user_id', userId)
     .order('created_at', { ascending: false });
 
-  if (error) throw error;
+  if (error) {
+    console.error('❌ Error fetching user lists:', error);
+    throw error;
+  }
+  console.log('✅ User lists fetched:', data);
   return data || [];
 }
 
@@ -95,8 +100,8 @@ async function addToList(
       list_id: listId,
       media_id: mediaId,
       media_type: mediaType,
-      title,
-      poster_path: posterPath,
+      media_title: title,
+      media_poster_path: posterPath,
     });
 
   if (error) throw error;

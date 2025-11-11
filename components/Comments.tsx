@@ -41,44 +41,97 @@ export default function Comments({ mediaId, mediaType }: CommentsProps) {
 
   useEffect(() => {
     loadComments();
-  }, [mediaId, mediaType]);
+    loadUserReview();
+  }, [mediaId, mediaType, user]);
+
+  // Charger l'avis existant de l'utilisateur
+  const loadUserReview = async () => {
+    if (!user) return;
+
+    try {
+      const { supabase } = await import('@/lib/supabase');
+      const { data } = await supabase
+        .from('reviews')
+        .select('rating, comment')
+        .eq('user_id', user.id)
+        .eq('media_id', mediaId)
+        .eq('media_type', mediaType)
+        .single();
+
+      if (data) {
+        setRating(data.rating);
+        setComment(data.comment);
+      }
+    } catch (error) {
+      // Pas d'avis existant, c'est normal
+    }
+  };
 
   const loadComments = async () => {
     try {
       const { supabase } = await import('@/lib/supabase');
       
-      const { data, error } = await supabase
+      console.log('🔄 Chargement avis pour:', { mediaId, mediaType });
+      
+      // Étape 1 : Récupérer les reviews
+      const { data: reviewsData, error: reviewsError } = await supabase
         .from('reviews')
-        .select(`
-          id,
-          user_id,
-          media_id,
-          media_type,
-          rating,
-          comment,
-          created_at,
-          updated_at,
-          profiles:user_id (username, avatar_url)
-        `)
+        .select('id, user_id, media_id, media_type, rating, comment, created_at, updated_at')
         .eq('media_id', mediaId)
         .eq('media_type', mediaType)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (reviewsError) {
+        console.error('❌ Erreur chargement avis:', reviewsError);
+        throw reviewsError;
+      }
 
-      const formattedComments = data?.map((review: any) => ({
-        id: review.id,
-        user_id: review.user_id,
-        media_id: review.media_id,
-        media_type: review.media_type,
-        rating: review.rating,
-        comment: review.comment,
-        created_at: review.created_at,
-        updated_at: review.updated_at,
-        username: review.profiles?.username || 'Utilisateur',
-        avatar_url: review.profiles?.avatar_url || '',
-      })) || [];
+      console.log('📊 Avis récupérés:', reviewsData?.length || 0);
 
+      if (!reviewsData || reviewsData.length === 0) {
+        setComments([]);
+        setLoading(false);
+        return;
+      }
+
+      // Étape 2 : Récupérer les profiles des users
+      const userIds = [...new Set(reviewsData.map(r => r.user_id))];
+      console.log('👥 User IDs à récupérer:', userIds);
+      
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, user_id, username, avatar_url')
+        .in('user_id', userIds);
+
+      if (profilesError) {
+        console.error('❌ Erreur profiles:', profilesError);
+      }
+      
+      console.log('📊 Profiles récupérés:', profilesData);
+
+      // Créer un map des profiles par user_id (pas par id)
+      const profilesMap = new Map(
+        profilesData?.map(p => [p.user_id, p]) || []
+      );
+
+      const formattedComments = reviewsData.map((review: any) => {
+        const profile = profilesMap.get(review.user_id);
+        console.log('👤 Review user_id:', review.user_id, '→ Profile:', profile);
+        return {
+          id: review.id,
+          user_id: review.user_id,
+          media_id: review.media_id,
+          media_type: review.media_type,
+          rating: review.rating,
+          comment: review.comment,
+          created_at: review.created_at,
+          updated_at: review.updated_at,
+          username: profile?.username || 'Utilisateur',
+          avatar_url: profile?.avatar_url || '',
+        };
+      });
+
+      console.log('✅ Avis formatés:', formattedComments.length);
       setComments(formattedComments);
     } catch (error) {
       console.error('Error loading comments:', error);
@@ -120,15 +173,39 @@ export default function Comments({ mediaId, mediaType }: CommentsProps) {
     try {
       const { supabase } = await import('@/lib/supabase');
 
-      const { error } = await supabase.from('reviews').insert({
-        user_id: user.id,
-        media_id: mediaId,
-        media_type: mediaType,
-        rating,
-        comment: moderatedComment,
-      });
+      // Vérifier si l'utilisateur a déjà posté un avis
+      const { data: existingReview } = await supabase
+        .from('reviews')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('media_id', mediaId)
+        .eq('media_type', mediaType)
+        .single();
 
-      if (error) throw error;
+      if (existingReview) {
+        // UPDATE l'avis existant
+        const { error } = await supabase
+          .from('reviews')
+          .update({
+            rating,
+            comment: moderatedComment,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', existingReview.id);
+
+        if (error) throw error;
+      } else {
+        // INSERT nouvel avis
+        const { error } = await supabase.from('reviews').insert({
+          user_id: user.id,
+          media_id: mediaId,
+          media_type: mediaType,
+          rating,
+          comment: moderatedComment,
+        });
+
+        if (error) throw error;
+      }
 
       if (hasVulgar) {
         alert('⚠️ Votre commentaire contenait des mots inappropriés qui ont été modérés.');
@@ -188,9 +265,16 @@ export default function Comments({ mediaId, mediaType }: CommentsProps) {
   };
 
   const getAvatar = (avatar_url: string) => {
-    if (!avatar_url) return { emoji: '👤', color: 'bg-gray-600' };
+    if (!avatar_url) return { emoji: '👤', color: 'bg-gray-600', isImage: false };
+    
+    // Vérifier si c'est une URL d'image (Supabase ou autre)
+    if (avatar_url.includes('http://') || avatar_url.includes('https://')) {
+      return { imageUrl: avatar_url, isImage: true };
+    }
+    
+    // Sinon, c'est un emoji avec couleur
     const parts = avatar_url.split('|');
-    return { emoji: parts[0] || '👤', color: parts[1] || 'bg-gray-600' };
+    return { emoji: parts[0] || '👤', color: parts[1] || 'bg-gray-600', isImage: false };
   };
 
   // Statistiques
@@ -221,174 +305,149 @@ export default function Comments({ mediaId, mediaType }: CommentsProps) {
   return (
     <div className="max-w-4xl mx-auto">
       {/* Header avec stats améliorées */}
-      <div className="mb-8">
-        <div className="flex items-center gap-3 mb-6">
-          <MessageSquare size={32} className="text-purple-400" />
-          <div>
-            <h2 className="text-3xl font-bold">Critiques</h2>
-            <p className="text-sm text-gray-400">
-              {comments.length} {comments.length > 1 ? 'avis' : 'avis'}
-            </p>
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <MessageSquare size={24} className="text-purple-400" />
+            <div>
+              <h2 className="text-2xl font-bold">Critiques</h2>
+              <p className="text-xs text-gray-500">
+                {comments.length} {comments.length > 1 ? 'avis' : 'avis'}
+              </p>
+            </div>
           </div>
+          
+          {hasRatings && (
+            <div className="flex items-center gap-2 bg-yellow-500/10 px-4 py-2 rounded-lg border border-yellow-500/20">
+              <Star size={20} className="text-yellow-400 fill-yellow-400" />
+              <div className="text-right">
+                <div className="text-2xl font-bold text-yellow-400">{averageRating}</div>
+                <div className="text-[10px] text-gray-500">/ 5</div>
+              </div>
+            </div>
+          )}
         </div>
 
         {hasRatings && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            {/* Note moyenne */}
-            <div className="bg-gradient-to-br from-yellow-900/20 to-orange-900/20 rounded-xl p-6 border border-yellow-600/20">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-400">Note moyenne</span>
-                <Star size={20} className="text-yellow-400 fill-yellow-400" />
-              </div>
-              <div className="text-4xl font-bold text-yellow-400">{averageRating}</div>
-              <div className="text-xs text-gray-500 mt-1">sur 5 étoiles</div>
-            </div>
-
-            {/* Distribution des notes */}
-            <div className="md:col-span-2 bg-white/5 rounded-xl p-6 border border-white/10">
-              <div className="text-sm font-semibold mb-4">Distribution des notes</div>
-              <div className="space-y-2">
-                {ratingDistribution.map(({ rating, count, percentage }) => (
-                  <div key={rating} className="flex items-center gap-3">
-                    <div className="flex items-center gap-1 w-16">
-                      <span className="text-sm font-medium">{rating}</span>
-                      <Star size={14} className="text-yellow-400 fill-yellow-400" />
-                    </div>
-                    <div className="flex-1 h-2 bg-gray-800 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-yellow-500 to-orange-500 transition-all duration-500"
-                        style={{ width: `${percentage}%` }}
-                      />
-                    </div>
-                    <span className="text-xs text-gray-500 w-12 text-right">{count}</span>
+          <div className="bg-white/5 rounded-lg p-4 border border-white/10 mb-4">
+            <div className="text-xs font-semibold mb-3 text-gray-400">Distribution des notes</div>
+            <div className="space-y-1.5">
+              {ratingDistribution.map(({ rating, count, percentage }) => (
+                <div key={rating} className="flex items-center gap-2 text-sm">
+                  <div className="flex items-center gap-1 w-12">
+                    <span className="text-xs font-medium">{rating}</span>
+                    <Star size={12} className="text-yellow-400 fill-yellow-400" />
                   </div>
-                ))}
-              </div>
+                  <div className="flex-1 h-1.5 bg-gray-800/50 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-yellow-500 to-orange-500 transition-all duration-500"
+                      style={{ width: `${percentage}%` }}
+                    />
+                  </div>
+                  <span className="text-xs text-gray-500 w-8 text-right">{count}</span>
+                </div>
+              ))}
             </div>
           </div>
         )}
 
-        {/* Filtres et tri */}
-        {comments.length > 0 && (
-          <div className="flex flex-wrap items-center gap-3 p-4 bg-white/5 rounded-lg border border-white/10">
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-4 py-2 bg-purple-600/20 border border-purple-600/30 rounded-lg hover:bg-purple-600/30 transition text-sm"
-            >
-              <Filter size={16} />
-              Filtres
-            </button>
-
-            {/* Tri */}
+        {/* Filtres et tri - Compact */}
+        {comments.length > 1 && (
+          <div className="flex items-center justify-between gap-2 p-3 bg-white/5 rounded-lg border border-white/10 text-xs">
             <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-500">Trier par:</span>
+              <span className="text-gray-500">Trier:</span>
               <button
                 onClick={() => setSortBy('recent')}
-                className={`px-3 py-1.5 rounded-lg text-xs transition ${
-                  sortBy === 'recent'
-                    ? 'bg-purple-600 text-white'
-                    : 'bg-white/5 hover:bg-white/10'
+                className={`px-2 py-1 rounded transition ${
+                  sortBy === 'recent' ? 'bg-purple-600 text-white' : 'hover:bg-white/5'
                 }`}
               >
-                <Clock size={12} className="inline mr-1" />
                 Récents
               </button>
               <button
                 onClick={() => setSortBy('rating')}
-                className={`px-3 py-1.5 rounded-lg text-xs transition ${
-                  sortBy === 'rating'
-                    ? 'bg-purple-600 text-white'
-                    : 'bg-white/5 hover:bg-white/10'
+                className={`px-2 py-1 rounded transition ${
+                  sortBy === 'rating' ? 'bg-purple-600 text-white' : 'hover:bg-white/5'
                 }`}
               >
-                <TrendingUp size={12} className="inline mr-1" />
-                Meilleures notes
+                Top notes
               </button>
             </div>
 
             {/* Filtre par note */}
-            {showFilters && (
-              <div className="flex items-center gap-2 ml-auto">
-                <span className="text-xs text-gray-500">Note:</span>
-                {[null, 5, 4, 3, 2, 1].map((rating) => (
-                  <button
-                    key={rating || 'all'}
-                    onClick={() => setFilterRating(rating)}
-                    className={`px-3 py-1.5 rounded-lg text-xs transition ${
-                      filterRating === rating
-                        ? 'bg-yellow-600 text-white'
-                        : 'bg-white/5 hover:bg-white/10'
-                    }`}
-                  >
-                    {rating ? `${rating}⭐` : 'Toutes'}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Formulaire d'ajout */}
-      {user && (
-        <form onSubmit={handleSubmit} className="mb-12 bg-white/5 rounded-xl p-6 border border-white/10">
-          <h3 className="text-lg font-semibold mb-4">Laisser un avis</h3>
-          
-          {/* Rating */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-2">Votre note</label>
-            <div className="flex gap-2">
-              {[1, 2, 3, 4, 5].map((star) => (
+            <div className="flex items-center gap-1.5">
+              <span className="text-gray-500">Note:</span>
+              {[null, 5, 4, 3, 2, 1].map((rating) => (
                 <button
-                  key={star}
-                  type="button"
-                  onClick={() => setRating(star)}
-                  onMouseEnter={() => setHoverRating(star)}
-                  onMouseLeave={() => setHoverRating(0)}
-                  className="transition-transform hover:scale-110"
+                  key={rating || 'all'}
+                  onClick={() => setFilterRating(rating)}
+                  className={`px-2 py-0.5 rounded transition ${
+                    filterRating === rating
+                      ? 'bg-yellow-600 text-white'
+                      : 'hover:bg-white/5'
+                  }`}
                 >
-                  <Star
-                    size={32}
-                    className={`${
-                      star <= (hoverRating || rating)
-                        ? 'text-yellow-400 fill-yellow-400'
-                        : 'text-gray-600'
-                    } transition-colors`}
-                  />
+                  {rating ? `${rating}★` : 'Tous'}
                 </button>
               ))}
             </div>
           </div>
+        )}
+      </div>
 
-          {/* Comment */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-2">Votre critique</label>
-            <textarea
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder="Partagez votre avis sur ce film..."
-              rows={4}
-              maxLength={500}
-              className="w-full px-4 py-3 bg-black/50 border border-white/10 rounded-lg focus:outline-none focus:border-purple-500 transition resize-none"
-              required
-            />
-            <div className="flex items-center justify-between mt-2">
-              <p className="text-xs text-gray-500">{comment.length}/500 caractères</p>
-              <div className="flex items-center gap-2 text-xs text-gray-500">
-                <AlertTriangle size={12} />
-                <span>Les propos inappropriés seront modérés</span>
+      {/* Formulaire d'ajout - Minimaliste et compact */}
+      {user && (
+        <form onSubmit={handleSubmit} className="mb-8 max-w-2xl">
+          <div className="flex items-start gap-4 bg-white/5 rounded-lg p-4 border border-white/10">
+            {/* Rating compact à gauche */}
+            <div className="flex flex-col items-start gap-2 min-w-fit">
+              <div className="flex gap-1">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    onClick={() => setRating(star)}
+                    onMouseEnter={() => setHoverRating(star)}
+                    onMouseLeave={() => setHoverRating(0)}
+                    className="transition-transform hover:scale-110"
+                  >
+                    <Star
+                      size={20}
+                      className={`${
+                        star <= (hoverRating || rating)
+                          ? 'text-yellow-400 fill-yellow-400'
+                          : 'text-gray-600'
+                      } transition-colors`}
+                    />
+                  </button>
+                ))}
+              </div>
+              <span className="text-xs text-gray-500">Noter</span>
+            </div>
+
+            {/* Textarea compact */}
+            <div className="flex-1">
+              <textarea
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder="Votre avis..."
+                rows={2}
+                maxLength={500}
+                className="w-full px-3 py-2 bg-black/30 border border-white/5 rounded text-sm focus:outline-none focus:border-purple-500/30 transition resize-none placeholder:text-gray-600"
+                required
+              />
+              <div className="flex items-center justify-between mt-1.5">
+                <span className="text-[10px] text-gray-600">{comment.length}/500</span>
+                <button
+                  type="submit"
+                  disabled={submitting || !comment.trim() || rating === 0}
+                  className="px-3 py-1 bg-purple-600 hover:bg-purple-700 rounded text-xs font-medium transition disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  {submitting ? '...' : 'Publier'}
+                </button>
               </div>
             </div>
           </div>
-
-          <button
-            type="submit"
-            disabled={submitting || !comment.trim() || rating === 0}
-            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg hover:from-purple-700 hover:to-pink-700 transition disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
-          >
-            <Send size={18} />
-            {submitting ? 'Envoi...' : 'Publier'}
-          </button>
         </form>
       )}
 
@@ -397,11 +456,23 @@ export default function Comments({ mediaId, mediaType }: CommentsProps) {
         <div className="flex justify-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
         </div>
-      ) : comments.length === 0 ? (
-        <div className="text-center py-12 bg-white/5 rounded-xl border border-white/10">
-          <MessageSquare size={48} className="mx-auto mb-4 text-gray-600" />
-          <h3 className="text-xl font-semibold mb-2">Aucun avis pour le moment</h3>
-          <p className="text-gray-400">Soyez le premier à donner votre avis !</p>
+      ) : filteredComments.length === 0 ? (
+        <div className="max-w-2xl py-8 px-4 bg-white/5 rounded-lg border border-white/10">
+          <div className="flex items-center gap-3 text-gray-500">
+            <MessageSquare size={20} className="text-gray-600" />
+            <div>
+              <p className="text-sm font-medium">
+                {comments.length === 0 
+                  ? 'Aucun avis pour le moment' 
+                  : 'Aucun avis correspondant aux filtres'}
+              </p>
+              <p className="text-xs text-gray-600">
+                {comments.length === 0 
+                  ? 'Soyez le premier à partager votre avis' 
+                  : 'Essayez de modifier les filtres'}
+              </p>
+            </div>
+          </div>
         </div>
       ) : (
         <div className="space-y-4">
@@ -422,9 +493,17 @@ export default function Comments({ mediaId, mediaType }: CommentsProps) {
                   <div className="flex items-start gap-4">
                     {/* Avatar */}
                     <Link href={`/profile/${review.username}`}>
-                      <div className={`${avatar.color} w-12 h-12 rounded-full flex items-center justify-center text-2xl flex-shrink-0 cursor-pointer hover:ring-2 ring-purple-500 transition`}>
-                        {avatar.emoji}
-                      </div>
+                      {avatar.isImage && avatar.imageUrl ? (
+                        <img 
+                          src={avatar.imageUrl}
+                          alt={review.username}
+                          className="w-12 h-12 rounded-full object-cover flex-shrink-0 cursor-pointer hover:ring-2 ring-purple-500 transition border-2 border-white/20"
+                        />
+                      ) : (
+                        <div className={`${avatar.color} w-12 h-12 rounded-full flex items-center justify-center text-2xl flex-shrink-0 cursor-pointer hover:ring-2 ring-purple-500 transition`}>
+                          {avatar.emoji}
+                        </div>
+                      )}
                     </Link>
 
                     <div className="flex-1">

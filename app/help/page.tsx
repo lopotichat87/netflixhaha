@@ -2,9 +2,10 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, Search, HelpCircle, Mail, MessageCircle } from 'lucide-react';
+import { ChevronDown, Search, HelpCircle, Mail, MessageCircle, Film } from 'lucide-react';
 import Link from 'next/link';
 import Footer from '@/components/Footer';
+import Chatbot from '@/components/Chatbot';
 
 export default function HelpPage() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
@@ -109,8 +110,46 @@ export default function HelpPage() {
 
   return (
     <div className="min-h-screen bg-black text-white">
+      {/* Navigation Menu Flottant */}
+      <nav className="fixed top-0 left-0 right-0 z-50 px-6 pt-6">
+        <div className="max-w-7xl mx-auto bg-black/80 backdrop-blur-lg border border-white/10 rounded-2xl shadow-2xl">
+          <div className="px-6">
+            <div className="flex items-center justify-center h-16">
+            <Link href="/landing" className="flex items-center gap-2">
+              <Film size={32} className="text-purple-500" />
+              <span className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                ReelVibe
+              </span>
+            </Link>
+
+            <div className="hidden md:flex items-center gap-8">
+              <Link href="/landing#features" className="text-gray-300 hover:text-white transition-colors font-medium">
+                Fonctionnalités
+              </Link>
+              <Link href="/help" className="text-white font-semibold">
+                Aide
+              </Link>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <Link href="/auth/login">
+                <button className="hidden sm:block px-4 py-2 text-white hover:text-gray-300 transition-colors font-medium">
+                  Connexion
+                </button>
+              </Link>
+              <Link href="/auth/signup">
+                <button className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-full font-semibold transition-all shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50">
+                  Créer un compte
+                </button>
+              </Link>
+            </div>
+          </div>
+        </div>
+        </div>
+      </nav>
+
       {/* Hero */}
-      <div className="relative py-24 px-4 overflow-hidden">
+      <div className="relative py-24 px-4 overflow-hidden mt-16">
         <div className="absolute inset-0 bg-gradient-to-b from-blue-900/20 to-black" />
         
         <motion.div
@@ -222,15 +261,14 @@ export default function HelpPage() {
                 Envoyer un email
               </button>
             </Link>
-            <button className="flex items-center gap-2 px-8 py-4 bg-white/10 border border-white/20 rounded-full hover:bg-white/20 transition font-semibold">
-              <MessageCircle size={20} />
-              Chat en direct
-            </button>
           </div>
         </div>
       </motion.div>
 
       <Footer />
+      
+      {/* Chatbot flottant */}
+      <Chatbot />
     </div>
   );
 }

@@ -3,31 +3,16 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
-let supabaseInstance: SupabaseClient | null = null;
-
-function getSupabaseClient() {
-  if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error('Supabase URL and Anon Key are required. Please check your environment variables.');
-  }
-  
-  if (!supabaseInstance) {
-    supabaseInstance = createClient(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
-        storage: typeof window !== 'undefined' ? window.localStorage : undefined,
-      },
-    });
-  }
-  
-  return supabaseInstance;
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Missing Supabase environment variables');
 }
 
-export const supabase = new Proxy({} as SupabaseClient, {
-  get: (target, prop) => {
-    const client = getSupabaseClient();
-    return (client as any)[prop];
+// Client Supabase avec configuration optimale pour Next.js
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
   },
 });
 
@@ -176,15 +161,20 @@ export const favoritesHelpers = {
   addToFavorites: async (userId: string, mediaId: number, mediaType: 'movie' | 'tv', title: string, posterPath?: string) => {
     const { data, error } = await supabase
       .from('favorites')
-      .insert([
+      .upsert(
         {
           user_id: userId,
           media_id: mediaId,
           media_type: mediaType,
           title,
           poster_path: posterPath,
+          is_favorite: true,
         },
-      ])
+        { 
+          onConflict: 'user_id,media_id',
+          ignoreDuplicates: false 
+        }
+      )
       .select();
     
     if (error) throw error;
@@ -201,13 +191,13 @@ export const favoritesHelpers = {
     if (error) throw error;
   },
 
-  getFavorites: async (userId: string) => {
+  getFavorites: async (userId: string, limit: number = 100, offset: number = 0) => {
     const { data, error } = await supabase
       .from('favorites')
       .select('id, user_id, media_id, media_type, title, poster_path, created_at, is_favorite')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
-      .limit(50);
+      .range(offset, offset + limit - 1);
     
     if (error) throw error;
     return data as Favorite[];
@@ -222,6 +212,16 @@ export const favoritesHelpers = {
       .single();
     
     return !!data;
+  },
+
+  getTotalCount: async (userId: string) => {
+    const { count, error } = await supabase
+      .from('favorites')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId);
+    
+    if (error) throw error;
+    return count || 0;
   },
 };
 
