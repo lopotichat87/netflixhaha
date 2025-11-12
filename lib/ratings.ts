@@ -59,7 +59,7 @@ export const ratingsHelpers = {
     return result;
   },
 
-  // Marquer comme "J'aime"
+  // Marquer comme "J'aime" (sans affecter les favoris)
   async toggleLike(
     userId: string,
     mediaId: number,
@@ -68,9 +68,19 @@ export const ratingsHelpers = {
     mediaPoster: string | null,
     isLiked: boolean
   ) {
-    return this.upsertRating(userId, mediaId, mediaType, mediaTitle, mediaPoster, {
-      is_liked: isLiked,
+    // Mise à jour uniquement de l'état is_liked dans la table ratings
+    // sans toucher à la table favorites
+    const { data, error } = await supabase.rpc('update_rating_like', {
+      p_user_id: userId,
+      p_media_id: mediaId,
+      p_media_type: mediaType,
+      p_media_title: mediaTitle,
+      p_media_poster: mediaPoster,
+      p_is_liked: isLiked
     });
+
+    if (error) throw error;
+    return data;
   },
 
   // Marquer comme "Vu"
